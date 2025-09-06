@@ -1,0 +1,9 @@
+{
+    "GSheet": "OHT",
+    "template": "Invoice_Generator/templates/Invoice-ComplianceMadeSimple-OHT.[LAST_MONTH].[TODAY].docx",
+    "invoice_folder": "/Users/vasilenkoilya/Dropbox/05. Work/2 Customers/7 OHT/__RECHNUNGEN__/",
+    "copy_invoice_PDF_to_folder": "/Users/vasilenkoilya/Dropbox/05. Work/4 My BIZ and brand/1 GmbH/2 Earnings/7 OHT/",
+    "VAT": false,
+    "period_from": "2025-07-01",
+    "period_to": "2025-08-31"  
+}

@@ -148,6 +148,28 @@ class WordDocumentEditor:
             "total": today_replacements + last_month_replacements + pay_by_date_replacements
         }
     
+    def replace_rate_placeholder(self, currency: str, hourly_rate: float) -> int:
+        """
+        Replace [RATE] placeholder with formatted hourly rate and currency.
+        
+        Args:
+            currency (str): Currency code (e.g., "CHF")
+            hourly_rate (float): Hourly rate value
+            
+        Returns:
+            int: Number of replacements made
+        """
+        if not self.document:
+            raise ValueError("Document not loaded. Call load_document() first.")
+        
+        # Format the rate as "CHF 170" or "USD 150"
+        rate_formatted = f"{currency} {hourly_rate:.0f}"
+        
+        # Replace [RATE] placeholder
+        rate_replacements = self.find_and_replace_text("[RATE]", rate_formatted)
+        
+        return rate_replacements
+    
     def add_table_entries(self, table_name: str, entries: List[Dict]) -> bool:
         """
         Add entries to a specific table in the document.

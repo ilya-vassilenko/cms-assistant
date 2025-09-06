@@ -236,9 +236,9 @@ def process_hourly_rate_and_vat(editor, config, total_hours, currency, hourly_ra
             money_total_formatted = f"{currency} {base_amount:,.2f}"
             
             # Replace placeholder
-            money_total_replacements = editor.find_and_replace_text("[MONET_TOTAL]", money_total_formatted)
+            money_total_replacements = editor.find_and_replace_text("[MONEY_TOTAL]", money_total_formatted)
             
-            print(f"Replaced [MONET_TOTAL] with: {money_total_formatted} ({money_total_replacements} replacements)")
+            print(f"Replaced [MONEY_TOTAL] with: {money_total_formatted} ({money_total_replacements} replacements)")
         
         return True
         
@@ -296,6 +296,11 @@ def main():
         # Process Google Sheets data and add working items to the table
         print("\n" + "="*50)
         total_hours, currency, hourly_rate = process_google_sheets_data(editor, config)
+        
+        # Replace [RATE] placeholder with hourly rate and currency
+        print("Replacing [RATE] placeholder...")
+        rate_replacements = editor.replace_rate_placeholder(currency, hourly_rate)
+        print(f"Replaced [RATE] with: {currency} {hourly_rate:.0f} ({rate_replacements} replacements)")
         
         # Process hourly rate and VAT calculations
         print("\n" + "="*50)
