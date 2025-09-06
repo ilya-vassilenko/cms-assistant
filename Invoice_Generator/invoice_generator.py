@@ -322,6 +322,31 @@ def main():
         print(f"Saving document as '{output_path}'...")
         if editor.save_document(output_path):
             print("Invoice generated successfully!")
+            
+            # Convert Word document to PDF
+            print("\n" + "="*50)
+            print("Converting to PDF...")
+            if editor.convert_to_pdf(output_path):
+                print("PDF conversion completed successfully!")
+                
+                # Copy PDF to specified folder
+                copy_to_folder = config.get('copy_invoice_PDF_to_folder')
+                if copy_to_folder:
+                    print("\n" + "="*50)
+                    print("Copying PDF to specified folder...")
+                    
+                    # Get the output folder name (last part of the path)
+                    output_folder_name = os.path.basename(invoice_folder.rstrip('/'))
+                    pdf_path = output_path.replace('.docx', '.pdf')
+                    
+                    if editor.copy_pdf_to_folder(pdf_path, copy_to_folder, output_folder_name):
+                        print("PDF copy completed successfully!")
+                    else:
+                        print("Warning: PDF copy failed, but PDF was created successfully")
+                else:
+                    print("No copy folder specified in config, skipping PDF copy")
+            else:
+                print("Warning: PDF conversion failed, but Word document was saved successfully")
         else:
             print("Failed to save document!")
             sys.exit(1)

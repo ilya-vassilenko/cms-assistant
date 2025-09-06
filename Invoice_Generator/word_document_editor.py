@@ -5,6 +5,8 @@ Handles Word document template processing, placeholder replacement, and document
 """
 
 import os
+import shutil
+import subprocess
 from datetime import datetime, timedelta
 from docx import Document
 from docx.shared import RGBColor, Pt
@@ -523,6 +525,148 @@ class WordDocumentEditor:
             print(f"Error saving document: {e}")
             print(f"Output path: {output_path}")
             print(f"Directory exists: {os.path.exists(os.path.dirname(output_path))}")
+            return False
+    
+    def convert_to_pdf(self, word_path: str) -> bool:
+        """
+        Convert a Word document to PDF using LibreOffice.
+        
+        Args:
+            word_path (str): Path to the Word document to convert
+            
+        Returns:
+            bool: True if conversion was successful, False otherwise
+        """
+        if not os.path.exists(word_path):
+            print(f"Error: Word document not found: {word_path}")
+            return False
+        
+        try:
+            # Generate PDF path (replace .docx with .pdf)
+            pdf_path = word_path.replace('.docx', '.pdf')
+            
+            # Get the directory of the Word document
+            output_dir = os.path.dirname(word_path)
+            
+            print(f"Converting Word document to PDF...")
+            print(f"Source: {word_path}")
+            print(f"Target: {pdf_path}")
+            
+            # Use LibreOffice to convert Word to PDF
+            # --headless: Run without GUI
+            # --convert-to pdf: Convert to PDF format
+            # --outdir: Specify output directory
+            
+            # Try different LibreOffice command paths
+            libreoffice_commands = [
+                'libreoffice',  # Standard command
+                '/Applications/LibreOffice.app/Contents/MacOS/soffice',  # macOS app bundle
+                '/usr/bin/libreoffice',  # Linux/Ubuntu
+                '/usr/local/bin/libreoffice'  # Homebrew on Intel Mac
+            ]
+            
+            cmd = None
+            for libreoffice_cmd in libreoffice_commands:
+                try:
+                    # Test if the command exists
+                    subprocess.run([libreoffice_cmd, '--version'], 
+                                 capture_output=True, timeout=5)
+                    cmd = [
+                        libreoffice_cmd,
+                        '--headless',
+                        '--convert-to', 'pdf',
+                        '--outdir', output_dir,
+                        word_path
+                    ]
+                    print(f"Using LibreOffice command: {libreoffice_cmd}")
+                    break
+                except (subprocess.TimeoutExpired, FileNotFoundError, subprocess.CalledProcessError):
+                    continue
+            
+            if cmd is None:
+                raise FileNotFoundError("LibreOffice command not found")
+            
+            # Run the conversion command
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+            
+            if result.returncode == 0:
+                # Verify the PDF was created
+                if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
+                    print(f"PDF created successfully: {pdf_path}")
+                    print(f"PDF file size: {os.path.getsize(pdf_path)} bytes")
+                    return True
+                else:
+                    print(f"Error: PDF file was not created or is empty")
+                    return False
+            else:
+                print(f"Error: LibreOffice conversion failed")
+                print(f"Return code: {result.returncode}")
+                print(f"Error output: {result.stderr}")
+                return False
+                
+        except subprocess.TimeoutExpired:
+            print("Error: PDF conversion timed out after 60 seconds")
+            return False
+        except FileNotFoundError:
+            print("Error: LibreOffice not found. Please install LibreOffice to convert documents to PDF.")
+            print("Installation instructions:")
+            print("- macOS: brew install --cask libreoffice")
+            print("- Ubuntu/Debian: sudo apt-get install libreoffice")
+            print("- Windows: Download from https://www.libreoffice.org/")
+            return False
+        except Exception as e:
+            print(f"Error converting to PDF: {e}")
+            return False
+    
+    def copy_pdf_to_folder(self, pdf_path: str, copy_to_folder: str, output_folder_name: str) -> bool:
+        """
+        Copy the PDF to a specified folder, creating a subfolder with the output folder name.
+        
+        Args:
+            pdf_path (str): Path to the PDF file to copy
+            copy_to_folder (str): Base folder where to copy the PDF
+            output_folder_name (str): Name of the subfolder to create (same as output folder name)
+            
+        Returns:
+            bool: True if copy was successful, False otherwise
+        """
+        if not os.path.exists(pdf_path):
+            print(f"Error: PDF file not found: {pdf_path}")
+            return False
+        
+        if not copy_to_folder:
+            print("Warning: No copy folder specified, skipping PDF copy")
+            return True
+        
+        try:
+            # Create the destination subfolder
+            destination_subfolder = os.path.join(copy_to_folder, output_folder_name)
+            
+            print(f"Creating destination folder: {destination_subfolder}")
+            os.makedirs(destination_subfolder, exist_ok=True)
+            
+            # Get the PDF filename
+            pdf_filename = os.path.basename(pdf_path)
+            destination_path = os.path.join(destination_subfolder, pdf_filename)
+            
+            print(f"Copying PDF...")
+            print(f"Source: {pdf_path}")
+            print(f"Destination: {destination_path}")
+            
+            # Copy the PDF file
+            shutil.copy2(pdf_path, destination_path)
+            
+            # Verify the copy was successful
+            if os.path.exists(destination_path) and os.path.getsize(destination_path) > 0:
+                print(f"PDF copied successfully!")
+                print(f"Copied file size: {os.path.getsize(destination_path)} bytes")
+                return True
+            else:
+                print(f"Error: PDF copy verification failed")
+                return False
+                
+        except Exception as e:
+            print(f"Error copying PDF: {e}")
             return False
     
     def get_template_filename(self) -> str:
