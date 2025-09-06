@@ -300,7 +300,8 @@ class GoogleDocReader:
         print("-" * 80)
         
         for item in self.work_items:
-            print(f"{item['date']:<12} {item['topic']:<20} {item['working_item']:<30} {item['hours']:<8.2f}")
+            date_str = item['date'].strftime('%Y-%m-%d')
+            print(f"{date_str:<12} {item['topic']:<20} {item['working_item']:<30} {item['hours']:<8.2f}")
         
         print("-" * 80)
     
