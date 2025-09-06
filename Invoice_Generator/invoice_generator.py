@@ -8,61 +8,10 @@ import os
 import sys
 import json
 import argparse
-from datetime import datetime, timedelta
-from docx import Document
+from datetime import date
+from word_document_editor import WordDocumentEditor
+from google_doc_reader import GoogleDocReader
 
-def get_today_formatted():
-    """Get today's date in MMMM dd, YYYY format"""
-    return datetime.now().strftime("%B %d, %Y")
-
-def get_last_month_formatted():
-    """Get last month in MMMM YYYY format"""
-    today = datetime.now()
-    # Get first day of current month, then subtract one day to get last month
-    first_day_current = today.replace(day=1)
-    last_month = first_day_current - timedelta(days=1)
-    return last_month.strftime("%B %Y")
-
-def get_pay_by_date_formatted():
-    """Get today + 30 days in MMMM dd, YYYY format"""
-    today = datetime.now()
-    pay_by_date = today + timedelta(days=30)
-    return pay_by_date.strftime("%B %d, %Y")
-
-def get_last_month_date():
-    """Get last month date object for folder naming"""
-    today = datetime.now()
-    first_day_current = today.replace(day=1)
-    return first_day_current - timedelta(days=1)
-
-def find_and_replace_text(doc, old_text, new_text):
-    """Find and replace text in all paragraphs and tables"""
-    replacements_made = 0
-    
-    # Replace in paragraphs
-    for paragraph in doc.paragraphs:
-        if old_text in paragraph.text:
-            # Clear the paragraph and rebuild it with the replacement
-            full_text = paragraph.text
-            if old_text in full_text:
-                paragraph.clear()
-                paragraph.add_run(full_text.replace(old_text, new_text))
-                replacements_made += 1
-    
-    # Replace in tables
-    for table in doc.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                for paragraph in cell.paragraphs:
-                    if old_text in paragraph.text:
-                        # Clear the paragraph and rebuild it with the replacement
-                        full_text = paragraph.text
-                        if old_text in full_text:
-                            paragraph.clear()
-                            paragraph.add_run(full_text.replace(old_text, new_text))
-                            replacements_made += 1
-    
-    return replacements_made
 
 def create_invoice_folder(invoice_folder_base, last_month_date):
     """Create folder with format YYYY-MM-DD <last month name> <last month year>"""
@@ -90,6 +39,191 @@ def load_config(config_path):
         print(f"Error: Invalid JSON in config file: {e}")
         sys.exit(1)
 
+def process_google_sheets_data(editor, config):
+    """
+    Process Google Sheets data and add working items to the Word document.
+    
+    Args:
+        editor (WordDocumentEditor): The Word document editor instance
+        config (dict): Configuration dictionary
+        
+    Returns:
+        bool: True if processing was successful, False otherwise
+    """
+    # Get Google Sheets configuration
+    google_doc_link = os.getenv('GOOGLE_DOC_LINK')
+    sheet_name = config.get('GSheet')
+    
+    if not google_doc_link:
+        print("Warning: GOOGLE_DOC_LINK environment variable not set")
+        print("Skipping Google Sheets integration")
+        return True
+    
+    if not sheet_name:
+        print("Warning: 'GSheet' not found in config file")
+        print("Skipping Google Sheets integration")
+        return True
+    
+    print(f"\nProcessing Google Sheets data...")
+    print(f"Google Sheet: {google_doc_link}")
+    print(f"Sheet name: {sheet_name}")
+    
+    try:
+        # Get the target month (current month - 1)
+        last_month_date = WordDocumentEditor.get_last_month_date()
+        target_month = date(last_month_date.year, last_month_date.month, 1)
+        
+        print(f"Target month: {target_month.strftime('%B %Y')}")
+        print(f"Looking for work items in: {target_month.strftime('%B %Y')}")
+        
+        # Create GoogleDocReader instance
+        reader = GoogleDocReader(google_doc_link, sheet_name, target_month)
+        
+        # Connect to the sheet
+        print("Connecting to Google Sheet...")
+        if not reader.connect():
+            print("Failed to connect to Google Sheet")
+            return False
+        
+        # Retrieve work items
+        print("Retrieving work items...")
+        work_items = reader.retrieve_work_items()
+        
+        if not work_items:
+            print("No work items found for the specified month")
+            print("Please check:")
+            print(f"1. Are there work items in the '{sheet_name}' sheet?")
+            print(f"2. Do the dates in column A match the target month: {target_month.strftime('%B %Y')}?")
+            print("3. Are the dates in the correct format (YYYY-MM-DD, MM/DD/YYYY, etc.)?")
+            return True
+        
+        print(f"Found {len(work_items)} work items")
+        
+        # Calculate number of rows to insert (X-1 where X is total items)
+        num_rows_to_insert = len(work_items) - 1
+        if num_rows_to_insert > 0:
+            print(f"Inserting {num_rows_to_insert} rows before the last row...")
+            if not editor.add_rows_before_last_row(num_rows_to_insert):
+                print("Failed to insert rows")
+                return False
+        
+        # Add each working item to the table
+        print("Adding working items to the table...")
+        for i, item in enumerate(work_items):
+            success = editor.add_working_item_to_first_free_row(
+                date=item['date'].strftime('%Y-%m-%d'),
+                topic=item['topic'],
+                efforts=item['working_item'],
+                hours=item['hours']
+            )
+            if not success:
+                print(f"Failed to add item {i+1}: {item['topic']}")
+                return False
+        
+        # Display summary
+        total_hours = reader.compute_total_hours()
+        print(f"\nGoogle Sheets integration completed:")
+        print(f"- Added {len(work_items)} working items")
+        print(f"- Total hours: {total_hours:.2f}")
+        
+        # Read currency and hourly rate from Google Sheet
+        print("Reading currency and hourly rate from Google Sheet...")
+        try:
+            currency, hourly_rate = reader.read_currency_and_hourly_rate()
+            print(f"Currency from Google Sheet: {currency}")
+            print(f"Hourly rate from Google Sheet: {hourly_rate}")
+            
+            # Check if hourly rate is 0 - this is a critical error
+            if hourly_rate == 0.0:
+                print("ERROR: Hourly rate is 0.0 - this is a critical error!")
+                print("Please check cell E2 in your Google Sheet and ensure it contains a valid hourly rate.")
+                sys.exit(1)
+            
+        except ValueError as e:
+            print(f"Error: {e}")
+            sys.exit(1)
+        
+        return (total_hours, currency, hourly_rate)
+        
+    except Exception as e:
+        print(f"Error processing Google Sheets data: {e}")
+        return False
+
+def process_hourly_rate_and_vat(editor, config, total_hours, currency, hourly_rate):
+    """
+    Process hourly rate and VAT calculations, then replace placeholders.
+    
+    Args:
+        editor (WordDocumentEditor): The Word document editor instance
+        config (dict): Configuration dictionary
+        total_hours (float): Total hours from Google Sheets
+        currency (str): Currency from Google Sheets
+        hourly_rate (float): Hourly rate from Google Sheets
+        
+    Returns:
+        bool: True if processing was successful, False otherwise
+    """
+    print(f"\nProcessing hourly rate and VAT calculations...")
+    
+    try:
+        
+        print(f"Currency: {currency}")
+        print(f"Hourly rate: {hourly_rate}")
+        print(f"Total hours: {total_hours}")
+        
+        # Check VAT configuration
+        vat_enabled = config.get('VAT')
+        if vat_enabled is None:
+            print("Error: 'VAT' configuration item is missing from config file!")
+            sys.exit(1)
+        
+        # Calculate base amount
+        base_amount = total_hours * hourly_rate
+        
+        # Replace [TOTAL_HOURS] placeholder
+        total_hours_replacements = editor.find_and_replace_text("[TOTAL_HOURS]", str(total_hours))
+        print(f"Replaced [TOTAL_HOURS] with: {total_hours} ({total_hours_replacements} replacements)")
+        
+        if vat_enabled:
+            print("VAT is enabled - calculating with 8.1% VAT")
+            
+            # Calculate VAT amount (8.1%)
+            vat_amount = base_amount * 0.081
+            
+            # Calculate total with VAT
+            total_with_vat = base_amount + vat_amount
+            
+            # Format amounts with currency
+            vat_formatted = f"{currency} {vat_amount:,.2f}"
+            money_no_vat_formatted = f"{currency} {base_amount:,.2f}"
+            money_total_formatted = f"{currency} {total_with_vat:,.2f}"
+            
+            # Replace placeholders
+            vat_replacements = editor.find_and_replace_text("[VAT]", vat_formatted)
+            money_no_vat_replacements = editor.find_and_replace_text("[MONEY_NO_VAT]", money_no_vat_formatted)
+            money_total_replacements = editor.find_and_replace_text("[MONET_TOTAL]", money_total_formatted)
+            
+            print(f"Replaced [VAT] with: {vat_formatted} ({vat_replacements} replacements)")
+            print(f"Replaced [MONEY_NO_VAT] with: {money_no_vat_formatted} ({money_no_vat_replacements} replacements)")
+            print(f"Replaced [MONET_TOTAL] with: {money_total_formatted} ({money_total_replacements} replacements)")
+            
+        else:
+            print("VAT is disabled - calculating without VAT")
+            
+            # Format amount with currency
+            money_total_formatted = f"{currency} {base_amount:,.2f}"
+            
+            # Replace placeholder
+            money_total_replacements = editor.find_and_replace_text("[MONET_TOTAL]", money_total_formatted)
+            
+            print(f"Replaced [MONET_TOTAL] with: {money_total_formatted} ({money_total_replacements} replacements)")
+        
+        return True
+        
+    except Exception as e:
+        print(f"Error processing hourly rate and VAT: {e}")
+        return False
+
 def main():
     parser = argparse.ArgumentParser(description='Generate invoice from template')
     parser.add_argument('--config', help='Path to configuration JSON file')
@@ -104,11 +238,6 @@ def main():
         print("Error: 'template' not found in config file!")
         sys.exit(1)
     
-    # Check if template exists
-    if not os.path.exists(template_path):
-        print(f"Error: Template file '{template_path}' not found!")
-        sys.exit(1)
-    
     # Get invoice folder from config
     invoice_folder_base = config.get('invoice_folder')
     if not invoice_folder_base:
@@ -116,43 +245,65 @@ def main():
         sys.exit(1)
     
     try:
+        # Initialize Word Document Editor
+        print("Initializing Word Document Editor...")
+        editor = WordDocumentEditor(template_path)
+        
         # Load the document
         print("Loading template document...")
-        doc = Document(template_path)
+        if not editor.load_document():
+            print("Failed to load document!")
+            sys.exit(1)
         
-        # Get formatted dates
-        today_formatted = get_today_formatted()
-        last_month_formatted = get_last_month_formatted()
-        pay_by_date_formatted = get_pay_by_date_formatted()
-        last_month_date = get_last_month_date()
+        # Get document info
+        doc_info = editor.get_document_info()
+        print(f"Document loaded: {doc_info['paragraphs_count']} paragraphs, {doc_info['tables_count']} tables")
         
-        # Replace placeholders
-        print("Replacing placeholders...")
-        today_replacements = find_and_replace_text(doc, "[TODAY]", today_formatted)
-        last_month_replacements = find_and_replace_text(doc, "[LAST_MONTH]", last_month_formatted)
-        pay_by_date_replacements = find_and_replace_text(doc, "[PAY_BY_DATE]", pay_by_date_formatted)
+        # Replace date placeholders
+        print("Replacing date placeholders...")
+        replacements = editor.replace_date_placeholders()
         
-        print(f"Replaced [TODAY] with: {today_formatted} ({today_replacements} replacements)")
-        print(f"Replaced [LAST_MONTH] with: {last_month_formatted} ({last_month_replacements} replacements)")
-        print(f"Replaced [PAY_BY_DATE] with: {pay_by_date_formatted} ({pay_by_date_replacements} replacements)")
+        print(f"Replaced [TODAY] with: {WordDocumentEditor.get_today_formatted()} ({replacements['TODAY']} replacements)")
+        print(f"Replaced [LAST_MONTH] with: {WordDocumentEditor.get_last_month_formatted()} ({replacements['LAST_MONTH']} replacements)")
+        print(f"Replaced [PAY_BY_DATE] with: {WordDocumentEditor.get_pay_by_date_formatted()} ({replacements['PAY_BY_DATE']} replacements)")
         
-        total_replacements = today_replacements + last_month_replacements + pay_by_date_replacements
-        if total_replacements == 0:
+        if replacements['total'] == 0:
             print("WARNING: No placeholders were found and replaced in the document!")
             print("Please check that the template contains [TODAY], [LAST_MONTH], and/or [PAY_BY_DATE] placeholders.")
         
+        # Process Google Sheets data and add working items to the table
+        print("\n" + "="*50)
+        google_sheets_result = process_google_sheets_data(editor, config)
+        if google_sheets_result is False:
+            print("Warning: Google Sheets integration failed, but continuing with invoice generation...")
+            total_hours = 0.0
+            currency = "CHF"  # Default currency
+            hourly_rate = 0.0  # Default hourly rate
+        else:
+            total_hours, currency, hourly_rate = google_sheets_result
+        
+        # Process hourly rate and VAT calculations
+        print("\n" + "="*50)
+        if not process_hourly_rate_and_vat(editor, config, total_hours, currency, hourly_rate):
+            print("Error: Failed to process hourly rate and VAT calculations!")
+            sys.exit(1)
+        
         # Create invoice folder
+        last_month_date = WordDocumentEditor.get_last_month_date()
         invoice_folder = create_invoice_folder(invoice_folder_base, last_month_date)
         
-        # Generate output filename by replacing [LAST_MONTH] in template filename
-        template_filename = os.path.basename(template_path)
-        output_filename = template_filename.replace("[LAST_MONTH]", last_month_formatted)
+        # Generate output filename
+        last_month_formatted = WordDocumentEditor.get_last_month_formatted()
+        output_filename = editor.generate_output_filename(last_month_formatted)
         output_path = os.path.join(invoice_folder, output_filename)
         
         # Save the document
         print(f"Saving document as '{output_path}'...")
-        doc.save(output_path)
-        print("Invoice generated successfully!")
+        if editor.save_document(output_path):
+            print("Invoice generated successfully!")
+        else:
+            print("Failed to save document!")
+            sys.exit(1)
         
     except Exception as e:
         print(f"Error processing document: {str(e)}")

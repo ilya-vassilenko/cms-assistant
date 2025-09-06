@@ -322,3 +322,37 @@ class GoogleDocReader:
             List[Dict]: List of work items
         """
         return self.work_items
+    
+    def read_currency_and_hourly_rate(self) -> tuple:
+        """
+        Read currency and hourly rate from the Google Sheet.
+        
+        Returns:
+            tuple: (currency, hourly_rate) where currency is str and hourly_rate is float
+            
+        Raises:
+            ValueError: If cells are empty or contain invalid data
+        """
+        if not self._sheet:
+            raise ValueError("Not connected to sheet. Call connect() first.")
+        
+        try:
+            # Read currency from cell E1 (row 1, column 5 in 1-based indexing)
+            currency = self._sheet.cell(1, 5).value  # E1
+            if not currency:
+                raise ValueError("Cell E1 (currency) is empty in Google Sheet!")
+            
+            # Read hourly rate from cell E2 (row 2, column 5 in 1-based indexing)
+            hourly_rate_str = self._sheet.cell(2, 5).value  # E2
+            if not hourly_rate_str:
+                raise ValueError("Cell E2 (hourly rate) is empty in Google Sheet!")
+            
+            try:
+                hourly_rate = float(hourly_rate_str)
+            except (ValueError, TypeError):
+                raise ValueError(f"Invalid hourly rate in cell E2: '{hourly_rate_str}'")
+            
+            return (currency, hourly_rate)
+            
+        except Exception as e:
+            raise ValueError(f"Error reading currency and hourly rate from Google Sheet: {e}")

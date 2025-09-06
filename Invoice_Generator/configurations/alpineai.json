@@ -2,5 +2,6 @@
     "GSheet": "AlpineAI",
     "template": "Invoice_Generator/templates/Invoice-ComplianceMadeSimple-AplineAI.[LAST_MONTH].[TODAY].docx",
     "invoice_folder": "/Users/vasilenkoilya/Dropbox/05. Work/2 Customers/1 AlpineAI/__RECHNUNGEN__/2 As Compliance Made Simple/",
-    "copy_invoice_PDF_to_folder": "/Users/vasilenkoilya/Dropbox/05. Work/4 My BIZ and brand/1 GmbH/2 Earnings/1 AlpineAI"
+    "copy_invoice_PDF_to_folder": "/Users/vasilenkoilya/Dropbox/05. Work/4 My BIZ and brand/1 GmbH/2 Earnings/1 AlpineAI",
+    "VAT": true
 }
