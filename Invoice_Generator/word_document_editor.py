@@ -349,7 +349,7 @@ class WordDocumentEditor:
     
     def generate_output_filename(self, last_month_formatted: str) -> str:
         """
-        Generate output filename by replacing [LAST_MONTH] in template filename.
+        Generate output filename by replacing [LAST_MONTH] and [TODAY] in template filename.
         
         Args:
             last_month_formatted (str): Formatted last month string
@@ -358,7 +358,15 @@ class WordDocumentEditor:
             str: Generated output filename
         """
         template_filename = self.get_template_filename()
-        return template_filename.replace("[LAST_MONTH]", last_month_formatted)
+        
+        # Replace [LAST_MONTH] with the formatted last month
+        output_filename = template_filename.replace("[LAST_MONTH]", last_month_formatted)
+        
+        # Replace [TODAY] with current date in YYYY-mm-dd format
+        today_formatted = datetime.now().strftime('%Y-%m-%d')
+        output_filename = output_filename.replace("[TODAY]", today_formatted)
+        
+        return output_filename
     
     def get_document_info(self) -> Dict[str, str]:
         """
