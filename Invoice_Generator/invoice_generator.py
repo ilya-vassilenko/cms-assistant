@@ -303,6 +303,12 @@ def main():
             print("Error: Failed to process hourly rate and VAT calculations!")
             sys.exit(1)
         
+        # Format payment instruction to bold (after placeholder replacement)
+        print("Formatting payment instruction...")
+        if not editor.format_payment_instruction():
+            print("Warning: Failed to format payment instruction")
+            print("Continuing with invoice generation...")
+        
         # Create invoice folder
         last_month_date = WordDocumentEditor.get_last_month_date()
         invoice_folder = create_invoice_folder(invoice_folder_base, last_month_date)

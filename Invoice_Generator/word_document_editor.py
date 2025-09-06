@@ -8,7 +8,7 @@ import os
 from datetime import datetime, timedelta
 from docx import Document
 from docx.shared import RGBColor, Pt
-from docx.enum.text import WD_COLOR_INDEX
+from docx.enum.text import WD_COLOR_INDEX, WD_ALIGN_PARAGRAPH
 from typing import Dict, List, Optional
 
 class WordDocumentEditor:
@@ -348,10 +348,11 @@ class WordDocumentEditor:
     
     def format_table(self) -> bool:
         """
-        Format the first table with specified colors and font size.
+        Format the first table with specified colors, font size, and alignment.
         - Set background color of the last row to #00B050 (green)
         - Set font color of the last row to #FFFFFF (white)
         - Set font size for all rows to 9pt
+        - Set text alignment of column 4 (hours) to center
         
         Returns:
             bool: True if formatting was applied successfully, False otherwise
@@ -380,11 +381,16 @@ class WordDocumentEditor:
             
             # Format all rows
             for row_idx, row in enumerate(table.rows):
-                for cell in row.cells:
+                for cell_idx, cell in enumerate(row.cells):
                     # Set font size to 9pt for all paragraphs in the cell
                     for paragraph in cell.paragraphs:
                         for run in paragraph.runs:
                             run.font.size = Pt(9)
+                    
+                    # Set center alignment for column 4 (hours column, index 3)
+                    if cell_idx == 3:
+                        for paragraph in cell.paragraphs:
+                            paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
                     
                     # Special formatting for the last row
                     if row_idx == total_rows - 1:
@@ -400,12 +406,55 @@ class WordDocumentEditor:
             
             print(f"Successfully formatted table:")
             print(f"- Set font size to 9pt for all rows")
+            print(f"- Set center alignment for column 4 (hours)")
             print(f"- Set last row background to green (#00B050)")
             print(f"- Set last row font color to white (#FFFFFF)")
             return True
             
         except Exception as e:
             print(f"Error formatting table: {e}")
+            return False
+    
+    def format_payment_instruction(self) -> bool:
+        """
+        Find and make bold the payment instruction line containing
+        "Please transfer ... to the following bank account by at latest ...:"
+        
+        Returns:
+            bool: True if formatting was applied successfully, False otherwise
+        """
+        if not self.document:
+            raise ValueError("Document not loaded. Call load_document() first.")
+        
+        try:
+            payment_instruction_found = False
+            
+            # Search through all paragraphs for the payment instruction
+            for paragraph in self.document.paragraphs:
+                paragraph_text = paragraph.text.lower()
+                
+                # Check if this paragraph contains payment instruction keywords
+                if ("please transfer" in paragraph_text and 
+                    "bank account" in paragraph_text and 
+                    "at latest" in paragraph_text):
+                    
+                    # Make all runs in this paragraph bold
+                    for run in paragraph.runs:
+                        run.bold = True
+                    
+                    print(f"Made payment instruction bold: '{paragraph.text[:50]}...'")
+                    payment_instruction_found = True
+                    break
+            
+            if not payment_instruction_found:
+                print("Warning: Payment instruction line not found")
+                print("Looking for text containing 'Please transfer', 'bank account', and 'at latest'")
+                return False
+            
+            return True
+            
+        except Exception as e:
+            print(f"Error formatting payment instruction: {e}")
             return False
     
     def _create_shading_element(self, color: RGBColor):
