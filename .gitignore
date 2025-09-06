@@ -1,0 +1,9 @@
+# VS Code settings and credentials
+.vscode/
+.env/
+
+# MacOS files
+.DS_Store
+
+# Python cache files
+__pycache__/
