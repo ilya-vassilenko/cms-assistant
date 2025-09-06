@@ -55,14 +55,14 @@ def process_google_sheets_data(editor, config):
     sheet_name = config.get('GSheet')
     
     if not google_doc_link:
-        print("Warning: GOOGLE_DOC_LINK environment variable not set")
-        print("Skipping Google Sheets integration")
-        return True
+        print("Error: GOOGLE_DOC_LINK environment variable not set")
+        print("Google Sheets integration is required for invoice generation")
+        sys.exit(1)
     
     if not sheet_name:
-        print("Warning: 'GSheet' not found in config file")
-        print("Skipping Google Sheets integration")
-        return True
+        print("Error: 'GSheet' not found in config file")
+        print("Google Sheets integration is required for invoice generation")
+        sys.exit(1)
     
     print(f"\nProcessing Google Sheets data...")
     print(f"Google Sheet: {google_doc_link}")
@@ -82,20 +82,22 @@ def process_google_sheets_data(editor, config):
         # Connect to the sheet
         print("Connecting to Google Sheet...")
         if not reader.connect():
-            print("Failed to connect to Google Sheet")
-            return False
+            print("Error: Failed to connect to Google Sheet")
+            print("Please check your Google Sheets URL and authentication")
+            sys.exit(1)
         
         # Retrieve work items
         print("Retrieving work items...")
         work_items = reader.retrieve_work_items()
         
         if not work_items:
-            print("No work items found for the specified month")
+            print("Error: No work items found for the specified month")
             print("Please check:")
             print(f"1. Are there work items in the '{sheet_name}' sheet?")
             print(f"2. Do the dates in column A match the target month: {target_month.strftime('%B %Y')}?")
             print("3. Are the dates in the correct format (YYYY-MM-DD, MM/DD/YYYY, etc.)?")
-            return True
+            print("Invoice generation cannot continue without work items")
+            sys.exit(1)
         
         print(f"Found {len(work_items)} work items")
         
@@ -104,8 +106,9 @@ def process_google_sheets_data(editor, config):
         if num_rows_to_insert > 0:
             print(f"Inserting {num_rows_to_insert} rows before the last row...")
             if not editor.add_rows_before_last_row(num_rows_to_insert):
-                print("Failed to insert rows")
-                return False
+                print("Error: Failed to insert rows into the Word document")
+                print("Cannot continue with invoice generation")
+                sys.exit(1)
         
         # Add each working item to the table
         print("Adding working items to the table...")
@@ -117,8 +120,9 @@ def process_google_sheets_data(editor, config):
                 hours=item['hours']
             )
             if not success:
-                print(f"Failed to add item {i+1}: {item['topic']}")
-                return False
+                print(f"Error: Failed to add item {i+1}: {item['topic']}")
+                print("Cannot continue with invoice generation")
+                sys.exit(1)
         
         # Display summary
         total_hours = reader.compute_total_hours()
@@ -147,7 +151,8 @@ def process_google_sheets_data(editor, config):
         
     except Exception as e:
         print(f"Error processing Google Sheets data: {e}")
-        return False
+        print("Cannot continue with invoice generation")
+        sys.exit(1)
 
 def process_hourly_rate_and_vat(editor, config, total_hours, currency, hourly_rate):
     """
@@ -273,14 +278,7 @@ def main():
         
         # Process Google Sheets data and add working items to the table
         print("\n" + "="*50)
-        google_sheets_result = process_google_sheets_data(editor, config)
-        if google_sheets_result is False:
-            print("Warning: Google Sheets integration failed, but continuing with invoice generation...")
-            total_hours = 0.0
-            currency = "CHF"  # Default currency
-            hourly_rate = 0.0  # Default hourly rate
-        else:
-            total_hours, currency, hourly_rate = google_sheets_result
+        total_hours, currency, hourly_rate = process_google_sheets_data(editor, config)
         
         # Process hourly rate and VAT calculations
         print("\n" + "="*50)

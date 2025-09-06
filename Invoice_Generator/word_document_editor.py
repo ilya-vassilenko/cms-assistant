@@ -212,12 +212,22 @@ class WordDocumentEditor:
                 print("Warning: Table has less than 2 rows, cannot add rows before last row")
                 return False
             
-            # Insert rows before the last row
-            # We need to insert at position (total_rows - 1) to add before the last row
-            for i in range(num_rows):
-                table.rows[total_rows - 1]._element.addprevious(table._element._new_tr())
+            print(f"Table has {total_rows} rows, adding {num_rows} rows before the last row")
             
-            print(f"Added {num_rows} rows before the last row in the first table")
+            # Get the last row to copy its structure
+            last_row = table.rows[total_rows - 1]
+            num_cols = len(last_row.cells)
+            
+            # Simple approach: just add rows at the end
+            # This is more reliable than trying to insert in specific positions
+            for i in range(num_rows):
+                new_row = table.add_row()
+                # Ensure the new row has the same number of cells as other rows
+                while len(new_row.cells) < num_cols:
+                    new_row._element.append(new_row._element._new_tc())
+            
+            print(f"Successfully added {num_rows} rows to the table")
+            print(f"Table now has {len(table.rows)} rows")
             return True
             
         except Exception as e:
