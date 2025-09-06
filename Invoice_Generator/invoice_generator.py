@@ -104,9 +104,9 @@ def process_google_sheets_data(editor, config):
         # Calculate number of rows to insert (X-1 where X is total items)
         num_rows_to_insert = len(work_items) - 1
         if num_rows_to_insert > 0:
-            print(f"Inserting {num_rows_to_insert} rows before the last row...")
-            if not editor.add_rows_before_last_row(num_rows_to_insert):
-                print("Error: Failed to insert rows into the Word document")
+            print(f"Adding {num_rows_to_insert} rows at the bottom...")
+            if not editor.add_rows_at_bottom(num_rows_to_insert):
+                print("Error: Failed to add rows to the Word document")
                 print("Cannot continue with invoice generation")
                 sys.exit(1)
         
@@ -124,8 +124,25 @@ def process_google_sheets_data(editor, config):
                 print("Cannot continue with invoice generation")
                 sys.exit(1)
         
-        # Display summary
+        # Calculate total hours from all work items
         total_hours = reader.compute_total_hours()
+        print(f"Calculated total hours: {total_hours:.2f}")
+        
+        # Set last row totals
+        print("Setting last row totals...")
+        if not editor.set_last_row_totals(total_hours):
+            print("Error: Failed to set last row totals")
+            print("Cannot continue with invoice generation")
+            sys.exit(1)
+        
+        # Format the table with colors and font size
+        print("Formatting table...")
+        if not editor.format_table():
+            print("Error: Failed to format table")
+            print("Cannot continue with invoice generation")
+            sys.exit(1)
+        
+        # Display summary
         print(f"\nGoogle Sheets integration completed:")
         print(f"- Added {len(work_items)} working items")
         print(f"- Total hours: {total_hours:.2f}")
@@ -206,11 +223,11 @@ def process_hourly_rate_and_vat(editor, config, total_hours, currency, hourly_ra
             # Replace placeholders
             vat_replacements = editor.find_and_replace_text("[VAT]", vat_formatted)
             money_no_vat_replacements = editor.find_and_replace_text("[MONEY_NO_VAT]", money_no_vat_formatted)
-            money_total_replacements = editor.find_and_replace_text("[MONET_TOTAL]", money_total_formatted)
+            money_total_replacements = editor.find_and_replace_text("[MONEY_TOTAL]", money_total_formatted)
             
             print(f"Replaced [VAT] with: {vat_formatted} ({vat_replacements} replacements)")
             print(f"Replaced [MONEY_NO_VAT] with: {money_no_vat_formatted} ({money_no_vat_replacements} replacements)")
-            print(f"Replaced [MONET_TOTAL] with: {money_total_formatted} ({money_total_replacements} replacements)")
+            print(f"Replaced [MONEY_TOTAL] with: {money_total_formatted} ({money_total_replacements} replacements)")
             
         else:
             print("VAT is disabled - calculating without VAT")

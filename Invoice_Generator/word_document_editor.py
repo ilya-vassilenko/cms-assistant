@@ -7,6 +7,8 @@ Handles Word document template processing, placeholder replacement, and document
 import os
 from datetime import datetime, timedelta
 from docx import Document
+from docx.shared import RGBColor, Pt
+from docx.enum.text import WD_COLOR_INDEX
 from typing import Dict, List, Optional
 
 class WordDocumentEditor:
@@ -184,12 +186,12 @@ class WordDocumentEditor:
             print(f"Error adding table entries: {e}")
             return False
     
-    def add_rows_before_last_row(self, num_rows: int) -> bool:
+    def add_rows_at_bottom(self, num_rows: int) -> bool:
         """
-        Find the first table and add X rows before the last row.
+        Find the first table and add X rows at the bottom.
         
         Args:
-            num_rows (int): Number of rows to add before the last row
+            num_rows (int): Number of rows to add at the bottom
             
         Returns:
             bool: True if rows were added successfully, False otherwise
@@ -205,21 +207,18 @@ class WordDocumentEditor:
         table = self.document.tables[0]
         
         try:
-            # Get the number of existing rows
             total_rows = len(table.rows)
             
-            if total_rows < 2:
-                print("Warning: Table has less than 2 rows, cannot add rows before last row")
+            if total_rows == 0:
+                print("Warning: Table has no rows")
                 return False
             
-            print(f"Table has {total_rows} rows, adding {num_rows} rows before the last row")
+            print(f"Table has {total_rows} rows, adding {num_rows} rows at the bottom")
             
-            # Get the last row to copy its structure
-            last_row = table.rows[total_rows - 1]
-            num_cols = len(last_row.cells)
+            # Get the number of columns from the first row
+            num_cols = len(table.rows[0].cells)
             
-            # Simple approach: just add rows at the end
-            # This is more reliable than trying to insert in specific positions
+            # Add rows at the bottom
             for i in range(num_rows):
                 new_row = table.add_row()
                 # Ensure the new row has the same number of cells as other rows
@@ -292,6 +291,145 @@ class WordDocumentEditor:
         except Exception as e:
             print(f"Error adding working item to table: {e}")
             return False
+    
+    def set_last_row_totals(self, total_hours: float) -> bool:
+        """
+        Set the last row of the first table to show "TOTAL" in the first column
+        and the total hours in the fourth column, both in bold font.
+        
+        Args:
+            total_hours (float): Total number of hours to display
+            
+        Returns:
+            bool: True if totals were set successfully, False otherwise
+        """
+        if not self.document:
+            raise ValueError("Document not loaded. Call load_document() first.")
+        
+        # Find the first table
+        if not self.document.tables:
+            print("Warning: No tables found in the document")
+            return False
+        
+        table = self.document.tables[0]
+        
+        try:
+            total_rows = len(table.rows)
+            if total_rows == 0:
+                print("Warning: Table has no rows")
+                return False
+            
+            last_row = table.rows[total_rows - 1]
+            
+            # Set "TOTAL" in the first column (index 0)
+            if len(last_row.cells) > 0:
+                # Clear existing content and add "TOTAL" in bold
+                first_cell = last_row.cells[0]
+                first_cell.text = ""  # Clear existing content
+                paragraph = first_cell.paragraphs[0]
+                run = paragraph.add_run("TOTAL")
+                run.bold = True
+            
+            # Set total hours in the fourth column (index 3)
+            if len(last_row.cells) > 3:
+                # Clear existing content and add total hours in bold
+                fourth_cell = last_row.cells[3]
+                fourth_cell.text = ""  # Clear existing content
+                paragraph = fourth_cell.paragraphs[0]
+                run = paragraph.add_run(f"{total_hours:.2f}")
+                run.bold = True
+            
+            print(f"Set last row totals: 'TOTAL' in column 1, '{total_hours:.2f}' hours in column 4")
+            return True
+            
+        except Exception as e:
+            print(f"Error setting last row totals: {e}")
+            return False
+    
+    def format_table(self) -> bool:
+        """
+        Format the first table with specified colors and font size.
+        - Set background color of the last row to #00B050 (green)
+        - Set font color of the last row to #FFFFFF (white)
+        - Set font size for all rows to 9pt
+        
+        Returns:
+            bool: True if formatting was applied successfully, False otherwise
+        """
+        if not self.document:
+            raise ValueError("Document not loaded. Call load_document() first.")
+        
+        # Find the first table
+        if not self.document.tables:
+            print("Warning: No tables found in the document")
+            return False
+        
+        table = self.document.tables[0]
+        
+        try:
+            total_rows = len(table.rows)
+            if total_rows == 0:
+                print("Warning: Table has no rows")
+                return False
+            
+            print(f"Formatting table with {total_rows} rows...")
+            
+            # Define colors
+            green_bg = RGBColor(0, 176, 80)  # #00B050
+            white_font = RGBColor(255, 255, 255)  # #FFFFFF
+            
+            # Format all rows
+            for row_idx, row in enumerate(table.rows):
+                for cell in row.cells:
+                    # Set font size to 9pt for all paragraphs in the cell
+                    for paragraph in cell.paragraphs:
+                        for run in paragraph.runs:
+                            run.font.size = Pt(9)
+                    
+                    # Special formatting for the last row
+                    if row_idx == total_rows - 1:
+                        # Set background color for the last row
+                        cell._tc.get_or_add_tcPr().append(
+                            self._create_shading_element(green_bg)
+                        )
+                        
+                        # Set font color to white for the last row
+                        for paragraph in cell.paragraphs:
+                            for run in paragraph.runs:
+                                run.font.color.rgb = white_font
+            
+            print(f"Successfully formatted table:")
+            print(f"- Set font size to 9pt for all rows")
+            print(f"- Set last row background to green (#00B050)")
+            print(f"- Set last row font color to white (#FFFFFF)")
+            return True
+            
+        except Exception as e:
+            print(f"Error formatting table: {e}")
+            return False
+    
+    def _create_shading_element(self, color: RGBColor):
+        """
+        Create a shading element for table cell background color.
+        
+        Args:
+            color (RGBColor): The background color to apply
+            
+        Returns:
+            The shading element
+        """
+        from docx.oxml import parse_xml
+        from docx.oxml.ns import nsdecls
+        
+        # Convert RGBColor to hex string
+        # RGBColor stores values as integers, access them directly
+        hex_color = f"{color[0]:02x}{color[1]:02x}{color[2]:02x}"
+        
+        # Create the shading element
+        shading_xml = f'''
+        <w:shd {nsdecls('w')} w:fill="{hex_color}" />
+        '''
+        return parse_xml(shading_xml)
     
     def save_document(self, output_path: str) -> bool:
         """
