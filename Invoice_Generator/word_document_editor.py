@@ -80,6 +80,72 @@ class WordDocumentEditor:
         first_day_current = today.replace(day=1)
         return first_day_current - timedelta(days=1)
     
+    @staticmethod
+    def validate_date_format(date_str: str) -> datetime:
+        """
+        Validate date string format and return datetime object.
+        
+        Args:
+            date_str (str): Date string in "YYYY-mm-dd" format
+            
+        Returns:
+            datetime: Parsed datetime object
+            
+        Raises:
+            ValueError: If date format is invalid
+        """
+        try:
+            return datetime.strptime(date_str, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError(f"Invalid date format: '{date_str}'. Expected format: YYYY-mm-dd")
+    
+    @staticmethod
+    def format_period_display(period_from: datetime, period_to: datetime) -> str:
+        """
+        Format period for display in document (replacing [LAST_MONTH]).
+        
+        Args:
+            period_from (datetime): Start date of the period
+            period_to (datetime): End date of the period
+            
+        Returns:
+            str: Formatted period string
+        """
+        from_month = period_from.strftime("%b'%y")
+        to_month = period_to.strftime("%b'%y")
+        
+        # If same month, just show the month
+        if from_month == to_month:
+            return from_month
+        else:
+            return f"the period {from_month} - {to_month}"
+    
+    @staticmethod
+    def format_period_folder_name(period_from: datetime, period_to: datetime) -> str:
+        """
+        Format period for folder naming.
+        
+        Args:
+            period_from (datetime): Start date of the period
+            period_to (datetime): End date of the period
+            
+        Returns:
+            str: Formatted folder name
+        """
+        # Use current date for folder naming
+        today = datetime.now()
+        current_date_str = today.strftime("%Y-%m-%d")
+        
+        # If same month, use single month format
+        if period_from.month == period_to.month and period_from.year == period_to.year:
+            month_str = period_from.strftime("%B %Y")
+            return f"{current_date_str} {month_str}"
+        else:
+            # For multiple months, use "Month Year to Month Year" format
+            from_month = period_from.strftime("%B %Y")
+            to_month = period_to.strftime("%B %Y")
+            return f"{current_date_str} {from_month} to {to_month}"
+    
     def find_and_replace_text(self, old_text: str, new_text: str) -> int:
         """
         Find and replace text in all paragraphs and tables.
@@ -121,9 +187,13 @@ class WordDocumentEditor:
         
         return replacements_made
     
-    def replace_date_placeholders(self) -> Dict[str, int]:
+    def replace_date_placeholders(self, custom_period_from=None, custom_period_to=None) -> Dict[str, int]:
         """
         Replace all date placeholders in the document.
+        
+        Args:
+            custom_period_from (datetime, optional): Custom period start date
+            custom_period_to (datetime, optional): Custom period end date
         
         Returns:
             Dict[str, int]: Dictionary with placeholder names and replacement counts
@@ -133,8 +203,15 @@ class WordDocumentEditor:
         
         # Get formatted dates
         today_formatted = self.get_today_formatted()
-        last_month_formatted = self.get_last_month_formatted()
         pay_by_date_formatted = self.get_pay_by_date_formatted()
+        
+        # Handle [LAST_MONTH] placeholder
+        if custom_period_from and custom_period_to:
+            # Use custom period formatting
+            last_month_formatted = self.format_period_display(custom_period_from, custom_period_to)
+        else:
+            # Use default last month formatting
+            last_month_formatted = self.get_last_month_formatted()
         
         # Replace placeholders
         today_replacements = self.find_and_replace_text("[TODAY]", today_formatted)

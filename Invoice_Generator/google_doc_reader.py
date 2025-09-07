@@ -18,22 +18,25 @@ class GoogleDocReader:
     Attributes:
         url (str): URL to the Google document
         sheet_name (str): Name of the target sheet
-        target_month (date): First day of the target month (e.g., 2025-08-01)
+        period_from (date): Start date of the period (inclusive)
+        period_to (date): End date of the period (inclusive)
         work_items (List[Dict]): List of work items found
     """
     
-    def __init__(self, url: str, sheet_name: str, target_month: date):
+    def __init__(self, url: str, sheet_name: str, period_from: date, period_to: date):
         """
         Initialize the GoogleDocReader.
         
         Args:
             url (str): URL to the Google document
             sheet_name (str): Name of the target sheet
-            target_month (date): First day of the target month (e.g., 2025-08-01)
+            period_from (date): Start date of the period (inclusive)
+            period_to (date): End date of the period (inclusive)
         """
         self.url = url
         self.sheet_name = sheet_name
-        self.target_month = target_month
+        self.period_from = period_from
+        self.period_to = period_to
         self.work_items = []
         self._sheet = None
         self._setup_credentials()
@@ -182,18 +185,17 @@ class GoogleDocReader:
         except (ValueError, TypeError):
             return 0.0
     
-    def _is_in_target_month(self, item_date: date) -> bool:
+    def _is_in_target_period(self, item_date: date) -> bool:
         """
-        Check if the item date is within the target month.
+        Check if the item date is within the target period.
         
         Args:
             item_date (date): Date to check
             
         Returns:
-            bool: True if date is in target month, False otherwise
+            bool: True if date is in target period, False otherwise
         """
-        return (item_date.year == self.target_month.year and 
-                item_date.month == self.target_month.month)
+        return self.period_from <= item_date <= self.period_to
     
     def connect(self) -> bool:
         """
@@ -231,7 +233,7 @@ class GoogleDocReader:
     
     def retrieve_work_items(self) -> List[Dict]:
         """
-        Retrieve all work items from the specified sheet for the target month.
+        Retrieve all work items from the specified sheet for the target period.
         
         Returns:
             List[Dict]: List of work items with keys: date, topic, working_item, hours
@@ -262,8 +264,8 @@ class GoogleDocReader:
                 if not item_date:
                     continue  # Skip rows without valid dates
                 
-                # Check if date is in target month
-                if not self._is_in_target_month(item_date):
+                # Check if date is in target period
+                if not self._is_in_target_period(item_date):
                     continue
                 
                 # Extract work item data
@@ -281,7 +283,13 @@ class GoogleDocReader:
                 
                 self.work_items.append(work_item)
             
-            print(f"Found {len(self.work_items)} work items for {self.target_month.strftime('%B %Y')}")
+            # Format period display for logging
+            if self.period_from == self.period_to:
+                period_display = self.period_from.strftime('%B %Y')
+            else:
+                period_display = f"{self.period_from.strftime('%B %Y')} to {self.period_to.strftime('%B %Y')}"
+            
+            print(f"Found {len(self.work_items)} work items for {period_display}")
             return self.work_items
             
         except Exception as e:
@@ -294,7 +302,13 @@ class GoogleDocReader:
             print("No work items found.")
             return
         
-        print(f"\nWork Items for {self.target_month.strftime('%B %Y')}:")
+        # Format period display for logging
+        if self.period_from == self.period_to:
+            period_display = self.period_from.strftime('%B %Y')
+        else:
+            period_display = f"{self.period_from.strftime('%B %Y')} to {self.period_to.strftime('%B %Y')}"
+        
+        print(f"\nWork Items for {period_display}:")
         print("-" * 80)
         print(f"{'Date':<12} {'Topic':<20} {'Working Item':<30} {'Hours':<8}")
         print("-" * 80)

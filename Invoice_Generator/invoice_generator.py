@@ -8,7 +8,7 @@ import os
 import sys
 import json
 import argparse
-from datetime import date
+from datetime import date, datetime
 from word_document_editor import WordDocumentEditor
 from google_doc_reader import GoogleDocReader
 
@@ -69,15 +69,40 @@ def process_google_sheets_data(editor, config):
     print(f"Sheet name: {sheet_name}")
     
     try:
-        # Get the target month (current month - 1)
-        last_month_date = WordDocumentEditor.get_last_month_date()
-        target_month = date(last_month_date.year, last_month_date.month, 1)
+        # Check for custom period configuration
+        period_from_str = config.get('period_from')
+        period_to_str = config.get('period_to')
         
-        print(f"Target month: {target_month.strftime('%B %Y')}")
-        print(f"Looking for work items in: {target_month.strftime('%B %Y')}")
-        
-        # Create GoogleDocReader instance
-        reader = GoogleDocReader(google_doc_link, sheet_name, target_month)
+        if period_from_str and period_to_str:
+            # Custom period specified
+            print("Custom period specified in config")
+            try:
+                period_from = WordDocumentEditor.validate_date_format(period_from_str)
+                period_to = WordDocumentEditor.validate_date_format(period_to_str)
+                
+                # Validate that period_from is before period_to
+                if period_from > period_to:
+                    print(f"Error: period_from ({period_from_str}) must be before period_to ({period_to_str})")
+                    sys.exit(1)
+                
+                print(f"Looking for work items from: {period_from.strftime('%Y-%m-%d')} to {period_to.strftime('%Y-%m-%d')}")
+                
+                # Create GoogleDocReader instance with custom period
+                reader = GoogleDocReader(google_doc_link, sheet_name, period_from.date(), period_to.date())
+                
+            except ValueError as e:
+                print(f"Error: {e}")
+                sys.exit(1)
+        else:
+            # Default behavior: use previous month
+            last_month_date = WordDocumentEditor.get_last_month_date()
+            target_month = date(last_month_date.year, last_month_date.month, 1)
+            
+            print(f"Target month: {target_month.strftime('%B %Y')}")
+            print(f"Looking for work items in: {target_month.strftime('%B %Y')}")
+            
+            # Create GoogleDocReader instance with single month
+            reader = GoogleDocReader(google_doc_link, sheet_name, target_month, target_month)
         
         # Connect to the sheet
         print("Connecting to Google Sheet...")
@@ -281,12 +306,30 @@ def main():
         doc_info = editor.get_document_info()
         print(f"Document loaded: {doc_info['paragraphs_count']} paragraphs, {doc_info['tables_count']} tables")
         
+        # Check for custom period configuration for placeholder replacement
+        period_from_str = config.get('period_from')
+        period_to_str = config.get('period_to')
+        custom_period_from = None
+        custom_period_to = None
+        
+        if period_from_str and period_to_str:
+            try:
+                custom_period_from = WordDocumentEditor.validate_date_format(period_from_str)
+                custom_period_to = WordDocumentEditor.validate_date_format(period_to_str)
+            except ValueError as e:
+                print(f"Error: {e}")
+                sys.exit(1)
+        
         # Replace date placeholders
         print("Replacing date placeholders...")
-        replacements = editor.replace_date_placeholders()
+        replacements = editor.replace_date_placeholders(custom_period_from, custom_period_to)
         
         print(f"Replaced [TODAY] with: {WordDocumentEditor.get_today_formatted()} ({replacements['TODAY']} replacements)")
-        print(f"Replaced [LAST_MONTH] with: {WordDocumentEditor.get_last_month_formatted()} ({replacements['LAST_MONTH']} replacements)")
+        if custom_period_from and custom_period_to:
+            period_display = WordDocumentEditor.format_period_display(custom_period_from, custom_period_to)
+            print(f"Replaced [LAST_MONTH] with: {period_display} ({replacements['LAST_MONTH']} replacements)")
+        else:
+            print(f"Replaced [LAST_MONTH] with: {WordDocumentEditor.get_last_month_formatted()} ({replacements['LAST_MONTH']} replacements)")
         print(f"Replaced [PAY_BY_DATE] with: {WordDocumentEditor.get_pay_by_date_formatted()} ({replacements['PAY_BY_DATE']} replacements)")
         
         if replacements['total'] == 0:
@@ -315,12 +358,37 @@ def main():
             print("Continuing with invoice generation...")
         
         # Create invoice folder
-        last_month_date = WordDocumentEditor.get_last_month_date()
-        invoice_folder = create_invoice_folder(invoice_folder_base, last_month_date)
-        
-        # Generate output filename
-        last_month_formatted = WordDocumentEditor.get_last_month_formatted()
-        output_filename = editor.generate_output_filename(last_month_formatted)
+        if custom_period_from and custom_period_to:
+            # Use custom period for folder naming
+            folder_name = WordDocumentEditor.format_period_folder_name(custom_period_from, custom_period_to)
+            invoice_folder = os.path.join(invoice_folder_base, folder_name)
+            if not os.path.exists(invoice_folder):
+                os.makedirs(invoice_folder)
+                print(f"Created invoice folder: {invoice_folder}")
+            else:
+                print(f"Using existing invoice folder: {invoice_folder}")
+            
+            # Generate output filename with custom period
+            period_display = WordDocumentEditor.format_period_display(custom_period_from, custom_period_to)
+            output_filename = editor.generate_output_filename(period_display)
+        else:
+            # Use default last month for folder naming
+            # For default behavior, use current date for folder naming (not last day of previous month)
+            today = datetime.now()
+            last_month_date = WordDocumentEditor.get_last_month_date()
+            
+            # Create folder name with current date and last month name
+            folder_name = f"{today.strftime('%Y-%m-%d')} {last_month_date.strftime('%B %Y')}"
+            invoice_folder = os.path.join(invoice_folder_base, folder_name)
+            if not os.path.exists(invoice_folder):
+                os.makedirs(invoice_folder)
+                print(f"Created invoice folder: {invoice_folder}")
+            else:
+                print(f"Using existing invoice folder: {invoice_folder}")
+            
+            # Generate output filename with default last month
+            last_month_formatted = WordDocumentEditor.get_last_month_formatted()
+            output_filename = editor.generate_output_filename(last_month_formatted)
         output_path = os.path.join(invoice_folder, output_filename)
         
         # Save the document
