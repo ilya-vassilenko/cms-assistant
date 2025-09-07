@@ -9,6 +9,7 @@ import sys
 import json
 import argparse
 from datetime import date, datetime
+import calendar
 from word_document_editor import WordDocumentEditor
 from google_doc_reader import GoogleDocReader
 
@@ -84,6 +85,11 @@ def process_google_sheets_data(editor, config):
                 if period_from > period_to:
                     print(f"Error: period_from ({period_from_str}) must be before period_to ({period_to_str})")
                     sys.exit(1)
+
+                # If same year-month and period_to is the first (or equal to from), extend to last day of that month
+                if period_from.year == period_to.year and period_from.month == period_to.month:
+                    last_day = calendar.monthrange(period_from.year, period_from.month)[1]
+                    period_to = period_to.replace(day=last_day)
                 
                 print(f"Looking for work items from: {period_from.strftime('%Y-%m-%d')} to {period_to.strftime('%Y-%m-%d')}")
                 
@@ -97,12 +103,16 @@ def process_google_sheets_data(editor, config):
             # Default behavior: use previous month
             last_month_date = WordDocumentEditor.get_last_month_date()
             target_month = date(last_month_date.year, last_month_date.month, 1)
+            # Compute last day of that month
+            last_day = calendar.monthrange(target_month.year, target_month.month)[1]
+            period_from = target_month
+            period_to = date(target_month.year, target_month.month, last_day)
             
             print(f"Target month: {target_month.strftime('%B %Y')}")
-            print(f"Looking for work items in: {target_month.strftime('%B %Y')}")
+            print(f"Looking for work items from: {period_from.strftime('%Y-%m-%d')} to {period_to.strftime('%Y-%m-%d')}")
             
             # Create GoogleDocReader instance with single month
-            reader = GoogleDocReader(google_doc_link, sheet_name, target_month, target_month)
+            reader = GoogleDocReader(google_doc_link, sheet_name, period_from, period_to)
         
         # Connect to the sheet
         print("Connecting to Google Sheet...")
