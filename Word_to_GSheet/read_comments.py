@@ -496,14 +496,14 @@ def export_threads_to_gsheet(threads: List[Comment], spreadsheet_url: str) -> bo
         if ws is None:
             print("Warning: First worksheet (gid=0) not found.")
             return False
-        # Build rows: A=anchor, B=thread, C=nearest_heading, D=requirement_ID
+        # Build rows: A=heading, B=requirement_ID, C=anchor, D=thread
         rows: List[List[str]] = []
         for thread in threads:
-            anchor = thread.anchor_paragraph_text_marked or thread.anchor_paragraph_text or ''
-            thread_text = _format_thread_text(thread)
             heading = thread.nearest_heading or ''
             req_id = thread.requirement_ID or ''
-            rows.append([anchor, thread_text, heading, req_id])
+            anchor = thread.anchor_paragraph_text_marked or thread.anchor_paragraph_text or ''
+            thread_text = _format_thread_text(thread)
+            rows.append([heading, req_id, anchor, thread_text])
         # Overwrite existing data
         ws.clear()
         if rows:
