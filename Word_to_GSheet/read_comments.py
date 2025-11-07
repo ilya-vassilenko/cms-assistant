@@ -72,6 +72,10 @@ class Comment:
         # Anchor paragraph text for the comment's referenced range
         self.anchor_paragraph_text: Optional[str] = None
         self.anchor_paragraph_text_marked: Optional[str] = None
+        # Nearest heading found when traversing backwards from comment
+        self.nearest_heading: Optional[str] = None
+        # Requirement ID (DSSxxx format) found between comment and heading
+        self.requirement_ID: Optional[str] = None
 
     def __repr__(self) -> str:
         return f"Comment(id={self.id}, author={self.author}, parent_id={self.parent_id})"
@@ -258,6 +262,93 @@ def extract_comments_threads(docx_path: str) -> List[Comment]:
         for c in comments:
             if c.id in anchor_map:
                 c.anchor_paragraph_text, c.anchor_paragraph_text_marked = anchor_map[c.id]
+
+        # Build list of all paragraphs in document order with heading info
+        def extract_paragraph_text(p_elem: ET.Element) -> str:
+            parts: List[str] = []
+            for t in p_elem.findall(".//w:t", NS):
+                if t.text:
+                    parts.append(t.text)
+            return "".join(parts).strip()
+
+        def is_heading(p_elem: ET.Element) -> tuple:
+            """Check if paragraph is a heading. Returns (is_heading, level, text)."""
+            p_pr = p_elem.find("w:pPr", NS)
+            if p_pr is None:
+                return (False, 0, "")
+            p_style = p_pr.find("w:pStyle", NS)
+            if p_style is None:
+                return (False, 0, "")
+            style_val = p_style.get(f"{{{NS['w']}}}val", "")
+            level = 0
+            if style_val.startswith("Heading"):
+                try:
+                    level = int(style_val.replace("Heading", ""))
+                except ValueError:
+                    pass
+            if level in (1, 2, 3):
+                text = extract_paragraph_text(p_elem)
+                return (True, level, text)
+            return (False, 0, "")
+
+        # Build ordered list of paragraphs with their positions and heading info
+        all_paragraphs: List[tuple[ET.Element, int, bool, int, str]] = []
+        para_index = 0
+        for p in doc_root.findall('.//w:p', NS):
+            is_h, h_level, h_text = is_heading(p)
+            all_paragraphs.append((p, para_index, is_h, h_level, h_text))
+            para_index += 1
+
+        # Map comment ID to paragraph index (where commentRangeStart appears)
+        comment_to_para_index: Dict[int, int] = {}
+        for idx, (p, _, _, _, _) in enumerate(all_paragraphs):
+            for crs in p.findall('.//w:commentRangeStart', NS):
+                id_attr = crs.get(f"{{{NS['w']}}}id")
+                if not id_attr:
+                    continue
+                try:
+                    cid_int = int(id_attr)
+                    if cid_int not in comment_to_para_index:
+                        comment_to_para_index[cid_int] = idx
+                except ValueError:
+                    continue
+
+        # For each comment, traverse backwards to find nearest heading and DSSxxx
+        dss_pattern = re.compile(r'DSS\d{1,3}', re.IGNORECASE)
+        for c in comments:
+            if c.id not in comment_to_para_index:
+                continue
+            comment_para_idx = comment_to_para_index[c.id]
+            nearest_heading: Optional[tuple[int, int, str]] = None  # (index, level, text)
+            requirement_id: Optional[str] = None
+
+            # Traverse backwards from comment paragraph
+            for i in range(comment_para_idx, -1, -1):
+                p_elem, p_idx, is_h, h_level, h_text = all_paragraphs[i]
+                distance = comment_para_idx - p_idx
+                
+                if is_h and h_level in (1, 2, 3):
+                    # Found a heading - check if it's closer than previous
+                    if nearest_heading is None:
+                        nearest_heading = (p_idx, h_level, h_text)
+                    else:
+                        prev_distance = comment_para_idx - nearest_heading[0]
+                        # If closer, or same distance but higher level (h1 > h2 > h3)
+                        if distance < prev_distance or (distance == prev_distance and h_level < nearest_heading[1]):
+                            nearest_heading = (p_idx, h_level, h_text)
+                
+                # Search for DSSxxx pattern in this paragraph's text (only between comment and heading)
+                if requirement_id is None:
+                    para_text = extract_paragraph_text(p_elem)
+                    match = dss_pattern.search(para_text)
+                    if match:
+                        requirement_id = match.group(0).upper()
+
+            if nearest_heading:
+                c.nearest_heading = nearest_heading[2]
+            if requirement_id:
+                c.requirement_ID = requirement_id
+
     except Exception:
         # If document.xml isn't readable, skip anchors silently
         pass
@@ -405,12 +496,14 @@ def export_threads_to_gsheet(threads: List[Comment], spreadsheet_url: str) -> bo
         if ws is None:
             print("Warning: First worksheet (gid=0) not found.")
             return False
-        # Build rows
+        # Build rows: A=anchor, B=thread, C=nearest_heading, D=requirement_ID
         rows: List[List[str]] = []
         for thread in threads:
             anchor = thread.anchor_paragraph_text_marked or thread.anchor_paragraph_text or ''
             thread_text = _format_thread_text(thread)
-            rows.append([anchor, thread_text])
+            heading = thread.nearest_heading or ''
+            req_id = thread.requirement_ID or ''
+            rows.append([anchor, thread_text, heading, req_id])
         # Overwrite existing data
         ws.clear()
         if rows:
