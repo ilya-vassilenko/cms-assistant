@@ -4,6 +4,11 @@ import zipfile
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from typing import Dict, List, Optional
+import re
+
+# gspread auth like in google_doc_reader
+import gspread
+from google.oauth2.service_account import Credentials
 
 DOCX_RELATIVE_PATH = os.path.join(
     os.path.dirname(__file__),
@@ -313,6 +318,109 @@ def print_first_n_threads(threads: List[Comment], n: int = 5) -> None:
     else:
         print("=" * 80)
 
+def _extract_sheet_id(url: str) -> Optional[str]:
+    pattern = r'/spreadsheets/d/([a-zA-Z0-9\-_]+)'
+    m = re.search(pattern, url)
+    return m.group(1) if m else None
+
+def _setup_gspread_client() -> Optional[gspread.Client]:
+    try:
+        credentials_path = os.getenv('GOOGLE_CREDENTIALS_PATH')
+        if not credentials_path:
+            possible_paths = [
+                '/Users/vasilenkoilya/Documents/7 GitHub Cursor/cms-assistant/.vscode/client_secret_1049835516666-5v9s988evv40904gof6p0i7l93f57go7.apps.googleusercontent.com.json',
+                'credentials.json',
+                'client_secret.json',
+                os.path.expanduser('~/.config/gspread/credentials.json'),
+            ]
+            for path in possible_paths:
+                if os.path.exists(path):
+                    credentials_path = path
+                    break
+
+        if credentials_path and os.path.exists(credentials_path):
+            try:
+                authorized_user_paths = [
+                    '.vscode/authorized_user.json',
+                    'authorized_user.json',
+                    os.path.expanduser('~/.config/gspread/authorized_user.json'),
+                ]
+                authorized_user_path = None
+                for path in authorized_user_paths:
+                    if os.path.exists(path):
+                        authorized_user_path = path
+                        break
+                return gspread.oauth(
+                    credentials_filename=credentials_path,
+                    authorized_user_filename=authorized_user_path,
+                )
+            except Exception:
+                # Fallback to service account
+                try:
+                    scope = [
+                        'https://spreadsheets.google.com/feeds',
+                        'https://www.googleapis.com/auth/drive',
+                    ]
+                    creds = Credentials.from_service_account_file(credentials_path, scopes=scope)
+                    return gspread.authorize(creds)
+                except Exception:
+                    pass
+
+        # Default oauth (interactive cached)
+        try:
+            return gspread.oauth()
+        except Exception:
+            return None
+    except Exception:
+        return None
+
+def _format_thread_text(thread: Comment) -> str:
+    lines: List[str] = []
+    # First line: [1] Author: Comment
+    author = thread.author or 'Unknown'
+    body = thread.text or ''
+    lines.append(f"[1] {author}: {body}")
+    # Replies lines
+    def walk(c: Comment):
+        for r in c.replies:
+            r_author = r.author or 'Unknown'
+            r_body = r.text or ''
+            lines.append(f"{r_author}: {r_body}")
+            walk(r)
+    walk(thread)
+    return "\n".join(lines)
+
+def export_threads_to_gsheet(threads: List[Comment], spreadsheet_url: str) -> bool:
+    client = _setup_gspread_client()
+    if not client:
+        print("Warning: Could not authenticate to Google Sheets; skipping export.")
+        return False
+    sheet_id = _extract_sheet_id(spreadsheet_url)
+    if not sheet_id:
+        print(f"Warning: Could not parse sheet ID from URL: {spreadsheet_url}")
+        return False
+    try:
+        ss = client.open_by_key(sheet_id)
+        ws = ss.get_worksheet(0)  # first worksheet (gid=0)
+        if ws is None:
+            print("Warning: First worksheet (gid=0) not found.")
+            return False
+        # Build rows
+        rows: List[List[str]] = []
+        for thread in threads:
+            anchor = thread.anchor_paragraph_text_marked or thread.anchor_paragraph_text or ''
+            thread_text = _format_thread_text(thread)
+            rows.append([anchor, thread_text])
+        # Overwrite existing data
+        ws.clear()
+        if rows:
+            ws.update('A1', rows, value_input_option='RAW')
+        print(f"Exported {len(rows)} threads to Google Sheet (first sheet).")
+        return True
+    except Exception as e:
+        print(f"Failed to export to Google Sheets: {e}")
+        return False
+
 def main():
     # Allow optional CLI override of the path
     if len(sys.argv) > 1:
@@ -333,6 +441,10 @@ def main():
         sys.exit(1)
 
     print_first_n_threads(threads, n=5)
+
+    # Export all threads to the specified Google Sheet (first worksheet)
+    export_url = 'https://docs.google.com/spreadsheets/d/1dIdHfVIDn_YQo6F93SyN5e8JddLR1muHZgYyv6MAWRA/edit?gid=0#gid=0'
+    export_threads_to_gsheet(threads, export_url)
 
 if __name__ == "__main__":
     main()
