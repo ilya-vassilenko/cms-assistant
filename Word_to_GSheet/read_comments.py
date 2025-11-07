@@ -16,6 +16,8 @@ NS = {
     "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
     # Replies and extended attributes may appear under w15 in newer docs
     "w15": "http://schemas.microsoft.com/office/word/2012/wordml",
+    # Older paraId attributes may appear under w14 on paragraphs
+    "w14": "http://schemas.microsoft.com/office/word/2010/wordml",
 }
 
 def _get_text_from_paragraphs(element: ET.Element) -> str:
@@ -124,8 +126,11 @@ def extract_comments_threads(docx_path: str) -> List[Comment]:
         date_raw = node.get(f"{{{NS['w']}}}date")
         date_str = _parse_datetime(date_raw)
 
-        # capture paraId to map to commentsExtended threading info (if present)
-        para_id = node.get(f"{{{NS['w15']}}}paraId")
+        # capture paraId from the first paragraph inside the comment (w14/w15)
+        first_p = node.find(".//w:p", NS)
+        para_id = None
+        if first_p is not None:
+            para_id = first_p.get(f"{{{NS['w15']}}}paraId") or first_p.get(f"{{{NS['w14']}}}paraId")
 
         text = _get_text_from_paragraphs(node)
 
