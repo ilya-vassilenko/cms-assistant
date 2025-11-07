@@ -250,10 +250,17 @@ def process_hourly_rate_and_vat(editor, config, total_hours, currency, hourly_ra
             # Calculate total with VAT
             total_with_vat = base_amount + vat_amount
             
-            # Format amounts with currency
-            vat_formatted = f"{currency} {vat_amount:,.2f}"
-            money_no_vat_formatted = f"{currency} {base_amount:,.2f}"
-            money_total_formatted = f"{currency} {total_with_vat:,.2f}"
+            # Format amounts with currency (using proper rounding that rounds 0.5 up)
+            from decimal import Decimal, ROUND_HALF_UP
+            
+            def round_up_half(value, decimals=2):
+                """Round value to specified decimal places, rounding 0.5 up"""
+                decimal_value = Decimal(str(value))
+                return float(decimal_value.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
+            
+            vat_formatted = f"{currency} {round_up_half(vat_amount, 2):,.2f}"
+            money_no_vat_formatted = f"{currency} {round_up_half(base_amount, 2):,.2f}"
+            money_total_formatted = f"{currency} {round_up_half(total_with_vat, 2):,.2f}"
             
             # Replace placeholders
             vat_replacements = editor.find_and_replace_text("[VAT]", vat_formatted)

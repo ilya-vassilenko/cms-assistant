@@ -1,0 +1,9 @@
+{
+    "GSheet": "RSN8",
+    "template": "Invoice_Generator/templates/Invoice-ComplianceMadeSimple-RSN8.[LAST_MONTH].[TODAY].docx",
+    "invoice_folder": "/Users/vasilenkoilya/Dropbox/05. Work/2 Customers/12 RSN8/__RECHNUNGEN__/",
+    "copy_invoice_PDF_to_folder": "/Users/vasilenkoilya/Dropbox/05. Work/4 My BIZ and brand/1 GmbH/2 Earnings/12 RSN8/",
+    "VAT": false,
+    "period_from": "2025-07-01",
+    "period_to": "2025-09-30"   
+}

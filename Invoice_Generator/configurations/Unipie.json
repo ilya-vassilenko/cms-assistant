@@ -1,0 +1,9 @@
+{
+    "GSheet": "Unipie",
+    "template": "Invoice_Generator/templates/Invoice-ComplianceMadeSimple-Unipie.[LAST_MONTH].[TODAY].docx",
+    "invoice_folder": "/Users/vasilenkoilya/Dropbox/05. Work/2 Customers/4 Minoa (Unipie)/__1__INVOICES__/2 CmS/",
+    "copy_invoice_PDF_to_folder": "/Users/vasilenkoilya/Dropbox/05. Work/4 My BIZ and brand/1 GmbH/2 Earnings/4 Minoa",
+    "VAT": false,
+    "period_from": "2025-07-01",
+    "period_to": "2025-09-30"   
+}
