@@ -64,6 +64,9 @@ class Comment:
         self.date_str = date_str
         self.parent_id = parent_id
         self.replies: List["Comment"] = []
+        # Anchor paragraph text for the comment's referenced range
+        self.anchor_paragraph_text: Optional[str] = None
+        self.anchor_paragraph_text_marked: Optional[str] = None
 
     def __repr__(self) -> str:
         return f"Comment(id={self.id}, author={self.author}, parent_id={self.parent_id})"
@@ -195,6 +198,65 @@ def extract_comments_threads(docx_path: str) -> List[Comment]:
         # If the extended file doesn't exist or can't be parsed, ignore silently
         pass
 
+    # Build map of comment id -> (anchor paragraph text, marked text) from document.xml
+    try:
+        with zipfile.ZipFile(docx_path, "r") as zf:
+            with zf.open("word/document.xml") as f:
+                doc_tree = ET.parse(f)
+                doc_root = doc_tree.getroot()
+
+        def render_paragraph_with_marker(p_elem: ET.Element, target_id: int) -> (str, str):
+            plain_parts: List[str] = []
+            marked_parts: List[str] = []
+            in_range = False
+            inserted = False
+            target = str(target_id)
+            for elem in p_elem.iter():
+                tag = elem.tag.split("}")[-1]
+                if tag == "commentRangeStart" and elem.get(f"{{{NS['w']}}}id") == target:
+                    in_range = True
+                    continue
+                if tag == "commentRangeEnd" and elem.get(f"{{{NS['w']}}}id") == target:
+                    in_range = False
+                    continue
+                if tag == "t":
+                    txt = elem.text or ""
+                    plain_parts.append(txt)
+                    if in_range and not inserted:
+                        marked_parts.append("[1]")
+                        inserted = True
+                    marked_parts.append(txt)
+                elif tag == "br":
+                    plain_parts.append("\n")
+                    marked_parts.append("\n")
+            return ("".join(plain_parts).strip(), "".join(marked_parts).strip())
+
+        # Locate all paragraphs that contain comment range starts and map id -> paragraph
+        anchor_map: Dict[int, tuple] = {}
+        for p in doc_root.findall('.//w:p', NS):
+            # Find all commentRangeStart under this paragraph
+            for crs in p.findall('.//w:commentRangeStart', NS):
+                id_attr = crs.get(f"{{{NS['w']}}}id")
+                if not id_attr:
+                    continue
+                try:
+                    cid_int = int(id_attr)
+                except ValueError:
+                    continue
+                # Only compute once per id
+                if cid_int in anchor_map:
+                    continue
+                plain, marked = render_paragraph_with_marker(p, cid_int)
+                anchor_map[cid_int] = (plain, marked)
+
+        # Attach anchors to comments (top-level and replies independently)
+        for c in comments:
+            if c.id in anchor_map:
+                c.anchor_paragraph_text, c.anchor_paragraph_text_marked = anchor_map[c.id]
+    except Exception:
+        # If document.xml isn't readable, skip anchors silently
+        pass
+
     # Preserve original order as in comments.xml for top-level threads
     id_order = [c.id for c in comments if c.parent_id is None]
     top_level.sort(key=lambda c: id_order.index(c.id) if c.id in id_order else 10**9)
@@ -236,6 +298,11 @@ def print_first_n_threads(threads: List[Comment], n: int = 5) -> None:
         print(f"Date:   {date_display}")
         print("Comment:")
         print(thread.text if thread.text else "(no text)")
+
+        if thread.anchor_paragraph_text_marked:
+            print("\nAnchor paragraph (with marker):")
+            for line in thread.anchor_paragraph_text_marked.splitlines():
+                print(f"  {line}")
 
         # Print replies recursively as subconversations
         _print_replies_recursive(thread, depth=1)
