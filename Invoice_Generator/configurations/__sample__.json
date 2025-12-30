@@ -6,5 +6,6 @@
     "VAT": true,
     // if the following two parameters are not set, the invoice will be generated for the last month
     "period_from": "2025-07-01",
-    "period_to": "2025-09-30"   
+    "period_to": "2025-09-30",
+    "alternative_inovoice_date": "2025-12-31"
 }
