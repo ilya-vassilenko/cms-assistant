@@ -187,13 +187,14 @@ class WordDocumentEditor:
         
         return replacements_made
     
-    def replace_date_placeholders(self, custom_period_from=None, custom_period_to=None) -> Dict[str, int]:
+    def replace_date_placeholders(self, custom_period_from=None, custom_period_to=None, alternative_today_date=None) -> Dict[str, int]:
         """
         Replace all date placeholders in the document.
         
         Args:
             custom_period_from (datetime, optional): Custom period start date
             custom_period_to (datetime, optional): Custom period end date
+            alternative_today_date (datetime, optional): Alternative date to use instead of today's date
         
         Returns:
             Dict[str, int]: Dictionary with placeholder names and replacement counts
@@ -202,7 +203,11 @@ class WordDocumentEditor:
             raise ValueError("Document not loaded. Call load_document() first.")
         
         # Get formatted dates
-        today_formatted = self.get_today_formatted()
+        if alternative_today_date:
+            # Use alternative date formatted as "MMMM dd, YYYY"
+            today_formatted = alternative_today_date.strftime("%B %d, %Y")
+        else:
+            today_formatted = self.get_today_formatted()
         pay_by_date_formatted = self.get_pay_by_date_formatted()
         
         # Handle [LAST_MONTH] placeholder
@@ -777,12 +782,13 @@ class WordDocumentEditor:
         """
         return os.path.basename(self.template_path)
     
-    def generate_output_filename(self, last_month_formatted: str) -> str:
+    def generate_output_filename(self, last_month_formatted: str, alternative_today_date=None) -> str:
         """
         Generate output filename by replacing [LAST_MONTH] and [TODAY] in template filename.
         
         Args:
             last_month_formatted (str): Formatted last month string
+            alternative_today_date (datetime, optional): Alternative date to use instead of today's date
             
         Returns:
             str: Generated output filename
@@ -792,8 +798,11 @@ class WordDocumentEditor:
         # Replace [LAST_MONTH] with the formatted last month
         output_filename = template_filename.replace("[LAST_MONTH]", last_month_formatted)
         
-        # Replace [TODAY] with current date in YYYY-mm-dd format
-        today_formatted = datetime.now().strftime('%Y-%m-%d')
+        # Replace [TODAY] with current date or alternative date in YYYY-mm-dd format
+        if alternative_today_date:
+            today_formatted = alternative_today_date.strftime('%Y-%m-%d')
+        else:
+            today_formatted = datetime.now().strftime('%Y-%m-%d')
         output_filename = output_filename.replace("[TODAY]", today_formatted)
         
         return output_filename

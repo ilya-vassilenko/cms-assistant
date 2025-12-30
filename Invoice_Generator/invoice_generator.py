@@ -337,11 +337,27 @@ def main():
                 print(f"Error: {e}")
                 sys.exit(1)
         
+        # Check for alternative invoice date
+        alternative_invoice_date_str = config.get('alternative_inovoice_date')
+        alternative_invoice_date = None
+        if alternative_invoice_date_str:
+            try:
+                alternative_invoice_date = WordDocumentEditor.validate_date_format(alternative_invoice_date_str)
+                print(f"Using alternative invoice date: {alternative_invoice_date.strftime('%B %d, %Y')}")
+            except ValueError as e:
+                print(f"Error: Invalid alternative_inovoice_date format: {e}")
+                sys.exit(1)
+        
         # Replace date placeholders
         print("Replacing date placeholders...")
-        replacements = editor.replace_date_placeholders(custom_period_from, custom_period_to)
+        replacements = editor.replace_date_placeholders(custom_period_from, custom_period_to, alternative_invoice_date)
         
-        print(f"Replaced [TODAY] with: {WordDocumentEditor.get_today_formatted()} ({replacements['TODAY']} replacements)")
+        # Display what was replaced for [TODAY]
+        if alternative_invoice_date:
+            today_display = alternative_invoice_date.strftime("%B %d, %Y")
+        else:
+            today_display = WordDocumentEditor.get_today_formatted()
+        print(f"Replaced [TODAY] with: {today_display} ({replacements['TODAY']} replacements)")
         if custom_period_from and custom_period_to:
             period_display = WordDocumentEditor.format_period_display(custom_period_from, custom_period_to)
             print(f"Replaced [LAST_MONTH] with: {period_display} ({replacements['LAST_MONTH']} replacements)")
@@ -387,11 +403,15 @@ def main():
             
             # Generate output filename with custom period
             period_display = WordDocumentEditor.format_period_display(custom_period_from, custom_period_to)
-            output_filename = editor.generate_output_filename(period_display)
+            output_filename = editor.generate_output_filename(period_display, alternative_invoice_date)
         else:
             # Use default last month for folder naming
             # For default behavior, use current date for folder naming (not last day of previous month)
-            today = datetime.now()
+            # Use alternative invoice date if provided, otherwise use today
+            if alternative_invoice_date:
+                today = alternative_invoice_date
+            else:
+                today = datetime.now()
             last_month_date = WordDocumentEditor.get_last_month_date()
             
             # Create folder name with current date and last month name
@@ -405,7 +425,7 @@ def main():
             
             # Generate output filename with default last month
             last_month_formatted = WordDocumentEditor.get_last_month_formatted()
-            output_filename = editor.generate_output_filename(last_month_formatted)
+            output_filename = editor.generate_output_filename(last_month_formatted, alternative_invoice_date)
         output_path = os.path.join(invoice_folder, output_filename)
         
         # Save the document
