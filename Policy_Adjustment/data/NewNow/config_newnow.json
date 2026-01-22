@@ -1,0 +1,14 @@
+{
+  "input_folder": "Policy_Adjustment/data/NewNow/input",
+  "output_folder": "Policy_Adjustment/data/NewNow/output",
+  "replacements": [
+    {
+      "search": "AlpineAI AG",
+      "replace": "NewNow"
+    },
+    {
+      "search": "AlpineAI",
+      "replace": "NewNow"
+    }
+  ]
+}

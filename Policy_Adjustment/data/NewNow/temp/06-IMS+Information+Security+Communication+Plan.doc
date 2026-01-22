@@ -1,0 +1,569 @@
+Date: Fri, 16 Jan 2026 10:19:30 +0000 (UTC)
+Message-ID: <1882597956.165.1768558770304@49631d4cb2ef>
+Subject: Exported From Confluence
+MIME-Version: 1.0
+Content-Type: multipart/related; 
+	boundary="----=_Part_164_2002358338.1768558770304"
+
+------=_Part_164_2002358338.1768558770304
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///C:/exported.html
+
+<html xmlns:o=3D'urn:schemas-microsoft-com:office:office'
+      xmlns:w=3D'urn:schemas-microsoft-com:office:word'
+      xmlns:v=3D'urn:schemas-microsoft-com:vml'
+      xmlns=3D'urn:w3-org-ns:HTML'>
+<head>
+    <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8=
+">
+    <title>06-IMS Information Security Communication Plan</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:TargetScreenSize>1024x640</o:TargetScreenSize>
+            <o:PixelsPerInch>72</o:PixelsPerInch>
+            <o:AllowPNG/>
+        </o:OfficeDocumentSettings>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>90</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+                <!--
+        @page Section1 {
+            size: 8.5in 11.0in;
+            margin: 1.0in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-paper-source: 0;
+        }
+
+        table {
+            border: solid 1px;
+            border-collapse: collapse;
+        }
+
+        table td, table th {
+            border: solid 1px;
+            padding: 5px;
+        }
+
+        td {
+            page-break-inside: avoid;
+        }
+
+        tr {
+            page-break-after: avoid;
+        }
+
+        div.Section1 {
+            page: Section1;
+        }
+
+        /* Confluence print stylesheet. Common to all themes for print medi=
+a */
+/* Full of !important until we improve batching for print CSS */
+
+@media print {
+    #main {
+        padding-bottom: 1em !important; /* The default padding of 6em is to=
+o much for printouts */
+    }
+
+    body {
+        font: var(--ds-font-body-small, Arial, Helvetica, FreeSans, sans-se=
+rif);
+    }
+
+    body, #full-height-container, #main, #page, #content, .has-personal-sid=
+ebar #content {
+        background: var(--ds-surface, #fff) !important;
+        color: var(--ds-text, #000) !important;
+        border: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    a, a:link, a:visited, a:focus, a:hover, a:active {
+        color: var(--ds-text, #000);
+    }
+
+    #content h1,
+    #content h2,
+    #content h3,
+    #content h4,
+    #content h5,
+    #content h6 {
+        page-break-after: avoid;
+    }
+
+    pre {
+        font: var(--ds-font-code, Monaco, "Courier New", monospace);
+    }
+
+    #header,
+    .aui-header-inner,
+    #navigation,
+    #sidebar,
+    .sidebar,
+    #personal-info-sidebar,
+    .ia-fixed-sidebar,
+    .page-actions,
+    .navmenu,
+    .ajs-menu-bar,
+    .noprint,
+    .inline-control-link,
+    .inline-control-link a,
+    a.show-labels-editor,
+    .global-comment-actions,
+    .comment-actions,
+    .quick-comment-container,
+    #addcomment {
+        display: none !important;
+    }
+
+    /* CONF-28544 cannot print multiple pages in IE */
+    #splitter-content {
+        position: relative !important;
+    }
+
+    .comment .date::before {
+        content: none !important; /* remove middot for print view */
+    }
+
+    h1.pagetitle img {
+        height: auto;
+        width: auto;
+    }
+
+    .print-only {
+        display: block;
+    }
+
+    #footer {
+        position: relative !important; /* CONF-17506 Place the footer at en=
+d of the content */
+        margin: 0;
+        padding: 0;
+        background: none;
+        clear: both;
+    }
+
+    #poweredby {
+        border-top: none;
+        background: none;
+    }
+
+    #poweredby li.print-only {
+        display: list-item;
+        font-style: italic;
+    }
+
+    #poweredby li.noprint {
+        display: none;
+    }
+
+    /* no width controls in print */
+    .wiki-content .table-wrap,
+    .wiki-content p,
+    .panel .codeContent,
+    .panel .codeContent pre,
+    .image-wrap {
+        overflow: visible !important;
+    }
+
+    /* TODO - should this work? */
+    #children-section,
+    #comments-section .comment,
+    #comments-section .comment .comment-body,
+    #comments-section .comment .comment-content,
+    #comments-section .comment p {
+        page-break-inside: avoid;
+    }
+
+    #page-children a {
+        text-decoration: none;
+    }
+
+    /**
+     hide twixies
+
+     the specificity here is a hack because print styles
+     are getting loaded before the base styles. */
+    #comments-section.pageSection .section-header,
+    #comments-section.pageSection .section-title,
+    #children-section.pageSection .section-header,
+    #children-section.pageSection .section-title,
+    .children-show-hide {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .children-show-hide.icon {
+        display: none;
+    }
+
+    /* personal sidebar */
+    .has-personal-sidebar #content {
+        margin-right: 0px;
+    }
+
+    .has-personal-sidebar #content .pageSection {
+        margin-right: 0px;
+    }
+
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+-->
+    </style>
+</head>
+<body>
+    <h1>06-IMS Information Security Communication Plan</h1>
+    <div class=3D"Section1">
+        <div class=3D"table-wrap">
+<table data-table-width=3D"760" data-layout=3D"default" data-local-id=3D"6f=
+612114-b524-4842-ba75-3ab5536bea72" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 237.0px;">
+<col style=3D"width: 523.0px;">
+</colgroup>
+<tbody>
+<tr>
+<th class=3D"confluenceTh">
+<p><strong>Company</strong></p></th>
+<td class=3D"confluenceTd">
+<p>AlpineAI AG</p></td>
+</tr>
+<tr>
+<th class=3D"confluenceTh">
+<p><strong>Owner</strong></p></th>
+<td class=3D"confluenceTd">
+<p>COO</p></td>
+</tr>
+<tr>
+<th class=3D"confluenceTh">
+<p><strong>Effective Date</strong></p></th>
+<td class=3D"confluenceTd">
+<p><time datetime=3D"2025-10-31" class=3D"date-past">31 Oct 2025</time></p>=
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<style type=3D"text/css">/*<![CDATA[*/
+div.rbtoc1768558770286 {padding: 0px;}
+div.rbtoc1768558770286 ul {list-style: disc;margin-left: 0px;}
+div.rbtoc1768558770286 li {margin-left: 0px;padding-left: 0px;}
+
+/*]]>*/</style>
+<div class=3D"toc-macro rbtoc1768558770286">
+<ul class=3D"toc-indentation">
+<li><a href=3D"#id-06-IMSInformationSecurityCommunicationPlan-Purpose,scope=
+,andtargetaudience">Purpose, scope, and target audience</a></li>
+<li><a href=3D"#id-06-IMSInformationSecurityCommunicationPlan-RelevantDocum=
+ents">Relevant Documents</a></li>
+<li><a href=3D"#id-06-IMSInformationSecurityCommunicationPlan-RelatedStanda=
+rds&amp;Procedures">Related Standards &amp; Procedures</a></li>
+<li><a href=3D"#id-06-IMSInformationSecurityCommunicationPlan-InternalCommu=
+nication">Internal Communication</a></li>
+<li><a href=3D"#id-06-IMSInformationSecurityCommunicationPlan-Communication=
+withCustomers">Communication with Customers</a>
+<ul class=3D"toc-indentation">
+<li><a href=3D"#id-06-IMSInformationSecurityCommunicationPlan-Communication=
+withAuthorities">Communication with Authorities</a></li>
+</ul></li>
+<li><a href=3D"#id-06-IMSInformationSecurityCommunicationPlan-Communication=
+plan">Communication plan</a></li>
+<li><a href=3D"#id-06-IMSInformationSecurityCommunicationPlan-Effectiveness=
+andadequacyofthedocument">Effectiveness and adequacy of the document</a></l=
+i>
+<li><a href=3D"#id-06-IMSInformationSecurityCommunicationPlan-ChangeHistory=
+">Change History</a></li>
+</ul>
+</div>
+<h1 id=3D"id-06-IMSInformationSecurityCommunicationPlan-Purpose,scope,andta=
+rgetaudience">Purpose, scope, and target audience</h1>
+<p><strong>Purpose: </strong>This policy governs data protection=E2=80=93 a=
+nd information security=E2=80=93related communications within AlpineAI.</p>
+<p><strong>Scope: </strong>This policy applies to all communication channel=
+s and any communication regarding information security or data protection.<=
+/p>
+<p><strong>Target audience: </strong>Defined in the <a href=3D"https://alpi=
+neai.atlassian.net/wiki/x/AYBc" rel=3D"nofollow">Applicability Matrix</a>.<=
+/p>
+<h1 id=3D"id-06-IMSInformationSecurityCommunicationPlan-RelevantDocuments">=
+Relevant Documents</h1>
+<ul>
+<li>
+<p><a class=3D"external-link" href=3D"https://alpineaiag.sharepoint.com/:x:=
+/s/AlpineAIAG/EW4FZgnVKyhKjAx1gMxxE70BpkIaeN3tLnz2NiLmwhZd2g?e=3Dw0itd9" re=
+l=3D"nofollow">Customer Contacts for Information Security and Data Protecti=
+on</a></p></li>
+<li>
+<p><a class=3D"external-link" href=3D"https://alpineaiag.sharepoint.com/:f:=
+/s/AlpineAIAG/EslZk9Iv851ChwTJrlih6DQB8lkEuUEyMNu9Gqs2WJ9YvA?e=3DHJpYDH" re=
+l=3D"nofollow">Inventory of Subprocessor Notifications</a></p></li>
+</ul>
+<h1 id=3D"id-06-IMSInformationSecurityCommunicationPlan-RelatedStandards&am=
+p;Procedures">Related Standards &amp; Procedures</h1>
+<ul>
+<li>
+<p>Section =E2=80=9C7.4 Communication=E2=80=9D of the ISO/IEC 27001:2022 st=
+andard.</p></li>
+</ul>
+<h1 id=3D"id-06-IMSInformationSecurityCommunicationPlan-InternalCommunicati=
+on">Internal Communication</h1>
+<p><strong>Availability of policies.</strong> Information security and data=
+ protection policies shall be available to employees on Confluence.</p>
+<p><strong>Acknowledgements.</strong> Major versions of policies that requi=
+re formal employee acknowledgement shall be hosted in Vanta, and employee a=
+pprovals shall be recorded.</p>
+<p><strong>Key decisions.</strong> Important information security and data =
+protection decisions relevant to the entire team shall be communicated in m=
+onthly meetings.</p>
+<p><strong>Ad-hoc updates.</strong> Ad hoc decisions and relevant informati=
+on shall be communicated directly (peer-to-peer or in groups via email or S=
+lack).</p>
+<h1 id=3D"id-06-IMSInformationSecurityCommunicationPlan-CommunicationwithCu=
+stomers">Communication with Customers</h1>
+<p><strong>Contacts in agreements.</strong> Data Protection Agreements shal=
+l include the customer=E2=80=99s contact details for data protection and in=
+formation security matters. If a dedicated contact is not specified, the ma=
+in contractual contact shall be used.</p>
+<p><strong>Inventory of Customer Contacts.</strong> Alpine AI shall maintai=
+n a list of contacts for all customers to streamline communications require=
+d for subprocessor change notifications, incident reporting and other relev=
+ant matters. Key Account Management shall ensure that contact details remai=
+n up to date.<br><em>Note: See section =E2=80=9CRelated Documents=E2=80=9D =
+for the link to the Inventory of Customer Contacts.</em></p>
+<p><strong>Subprocessor notifications.</strong> Notifications regarding cha=
+nges to subprocessors shall be communicated in writing. The notification an=
+d the recipient list shall be stored in SharePoint for traceability.<br><em=
+>Note: See section =E2=80=9CRelated Documents=E2=80=9D for the link to the =
+Inventory of Subprocessor Notifications.</em></p>
+<h2 id=3D"id-06-IMSInformationSecurityCommunicationPlan-CommunicationwithAu=
+thorities"><strong>Communication with Authorities</strong></h2>
+<ul>
+<li>
+<p><strong>Role as processor.</strong> With regard to customer data, Alpine=
+ AI acts as a processor; the primary communication obligations rest with it=
+s customers as controllers.</p></li>
+<li>
+<p><strong>Coordination with customers.</strong> If an authority contacts A=
+lpine AI, the company shall communicate only in collaboration with the cust=
+omer and with the customer=E2=80=99s approval.</p></li>
+<li>
+<p><strong>Incident reporting.</strong> Major incidents shall be reported t=
+o authorities where there is a legal requirement to do so.</p></li>
+</ul>
+<h1 id=3D"id-06-IMSInformationSecurityCommunicationPlan-Communicationplan">=
+Communication plan</h1>
+<div class=3D"table-wrap">
+<table data-table-width=3D"1800" data-layout=3D"center" data-local-id=3D"bd=
+3f6eb6-a1ab-47df-9cfe-6a8cc4e92765" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 366.0px;">
+<col style=3D"width: 184.0px;">
+<col style=3D"width: 297.0px;">
+<col style=3D"width: 175.0px;">
+<col style=3D"width: 257.0px;">
+<col style=3D"width: 257.0px;">
+<col style=3D"width: 257.0px;">
+</colgroup>
+<tbody>
+<tr>
+<th class=3D"confluenceTh">
+<p><strong>Content</strong></p></th>
+<th class=3D"confluenceTh">
+<p><strong>Type</strong></p></th>
+<th class=3D"confluenceTh">
+<p><strong>Recipient(s)</strong></p></th>
+<th class=3D"confluenceTh">
+<p><strong>Originator(s)</strong></p></th>
+<th class=3D"confluenceTh">
+<p><strong>Timing</strong></p></th>
+<th class=3D"confluenceTh">
+<p><strong>Mechanism(s)</strong></p></th>
+<th class=3D"confluenceTh">
+<p><strong>Approval Required</strong></p></th>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>Information Security Objectives</p>
+<p>Internal Audit Results</p>
+<p>Risk Assessment Results</p>
+<p>PenTest Details</p></td>
+<td class=3D"confluenceTd">
+<p>Internal</p></td>
+<td class=3D"confluenceTd">
+<p>Leadership</p></td>
+<td class=3D"confluenceTd">
+<p>CISO</p></td>
+<td class=3D"confluenceTd">
+<p>Annually</p></td>
+<td class=3D"confluenceTd">
+<p>Confluence</p></td>
+<td class=3D"confluenceTd">
+<p>Yes</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>Information Security Policies</p></td>
+<td class=3D"confluenceTd">
+<p>Internal</p></td>
+<td class=3D"confluenceTd">
+<p>Leadership</p>
+<p>Employees and contractors</p></td>
+<td class=3D"confluenceTd">
+<p>CISO</p></td>
+<td class=3D"confluenceTd">
+<p>Annually</p></td>
+<td class=3D"confluenceTd">
+<p>Vanta Policy Management</p></td>
+<td class=3D"confluenceTd">
+<p>Mandatory relevant policies at onboarding and for major changes</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>Relevant information security decisions and information</p></td>
+<td class=3D"confluenceTd">
+<p>Internal</p></td>
+<td class=3D"confluenceTd">
+<p>Employees and contractors</p></td>
+<td class=3D"confluenceTd">
+<p>Leadership</p>
+<p>CISO</p></td>
+<td class=3D"confluenceTd">
+<p>as required</p></td>
+<td class=3D"confluenceTd">
+<p>In monthly meetings or via Slack and email</p></td>
+<td class=3D"confluenceTd">
+<p>No</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>Selected Policies</p>
+<p>Certificate Details</p>
+<p>PenTest summary</p>
+<p>Other relevant security documents</p>
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>External</p></td>
+<td class=3D"confluenceTd">
+<p>Customers</p></td>
+<td class=3D"confluenceTd">
+<p>CISO</p></td>
+<td class=3D"confluenceTd">
+<p>At least annually</p>
+<p>Ad-hoc if required</p></td>
+<td class=3D"confluenceTd">
+<p>Vanta Trust Center</p></td>
+<td class=3D"confluenceTd">
+<p>No</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>Subprocessor notifications</p></td>
+<td class=3D"confluenceTd">
+<p>External</p></td>
+<td class=3D"confluenceTd">
+<p>Customers</p></td>
+<td class=3D"confluenceTd">
+<p>COO</p></td>
+<td class=3D"confluenceTd">
+<p>30 days before introducing the subprocessor</p></td>
+<td class=3D"confluenceTd">
+<p>Email</p></td>
+<td class=3D"confluenceTd">
+<p>Yes, only if an explicit authorization is agreed in the contract.</p></t=
+d>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>Relevant incidents</p></td>
+<td class=3D"confluenceTd">
+<p>External</p></td>
+<td class=3D"confluenceTd">
+<p>Customers</p>
+<p>Authorities</p></td>
+<td class=3D"confluenceTd">
+<p>CISO</p></td>
+<td class=3D"confluenceTd">
+<p>Timely after discovering the incident (see applicable deadlines in the c=
+ontract and DPA).</p></td>
+<td class=3D"confluenceTd">
+<p>Email</p></td>
+<td class=3D"confluenceTd">
+<p>No</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 id=3D"id-06-IMSInformationSecurityCommunicationPlan-Effectivenessandade=
+quacyofthedocument">Effectiveness and adequacy of the document</h1>
+<p>When evaluating the effectiveness and adequacy of this document, the fol=
+lowing criteria need to be considered:</p>
+<ul>
+<li>
+<p>number of incidents related to a missing, incorrect or delayed communica=
+tion,</p></li>
+<li>
+<p>number of use cases not addressed by this policy.</p></li>
+</ul>
+<h1 id=3D"id-06-IMSInformationSecurityCommunicationPlan-ChangeHistory">Chan=
+ge History</h1>
+<style>
+    .aui td {
+        white-space: nowrap;
+    }
+</style>
+<table width=3D"100%" cellspacing=3D"0" class=3D"aui">
+<tbody>
+<tr>
+<th>Version</th>
+<th>Date</th>
+<th>Comment</th>
+</tr>
+<tr id=3D"rowForVersion3">
+<td align=3D"left"><b> <a href=3D"https://alpineai.atlassian.net/wiki/pages=
+/viewpage.action?pageId=3D237633571">Current Version</a> (v. 3) </b></td>
+<td align=3D"middle"><b> Nov 12, 2025 14:43 </b></td>
+<td style=3D"white-space:normal;" class=3D"versionComment"><b> <a href=3D"h=
+ttps://alpineai.atlassian.net/wiki/people/712020:d3657a2d-5ebb-408c-8eda-34=
+9178347518" class=3D"url fn confluence-userlink" data-account-id=3D"712020:=
+d3657a2d-5ebb-408c-8eda-349178347518">Ilya Vasilenko</a> </b></td>
+</tr>
+<tr id=3D"rowForVersion2" valign=3D"top">
+<td align=3D"left"><a href=3D"https://alpineai.atlassian.net/wiki/pages/vie=
+wpage.action?pageId=3D343048193&amp;pageVersion=3D2">v. 2</a></td>
+<td align=3D"middle">Oct 31, 2025 13:49</td>
+<td style=3D"white-space:normal;" class=3D"versionComment"><a href=3D"https=
+://alpineai.atlassian.net/wiki/people/712020:d3657a2d-5ebb-408c-8eda-349178=
+347518" class=3D"url fn confluence-userlink" data-account-id=3D"712020:d365=
+7a2d-5ebb-408c-8eda-349178347518">Ilya Vasilenko</a></td>
+</tr>
+<tr id=3D"rowForVersion1" valign=3D"top">
+<td align=3D"left"><a href=3D"https://alpineai.atlassian.net/wiki/pages/vie=
+wpage.action?pageId=3D318930959&amp;pageVersion=3D1">v. 1</a></td>
+<td align=3D"middle">Jun 23, 2025 07:08</td>
+<td style=3D"white-space:normal;" class=3D"versionComment"><a href=3D"https=
+://alpineai.atlassian.net/wiki/people/712020:d3657a2d-5ebb-408c-8eda-349178=
+347518" class=3D"url fn confluence-userlink" data-account-id=3D"712020:d365=
+7a2d-5ebb-408c-8eda-349178347518">Ilya Vasilenko</a></td>
+</tr>
+</tbody>
+</table>
+    </div>
+</body>
+</html>
+------=_Part_164_2002358338.1768558770304--
