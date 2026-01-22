@@ -76,6 +76,8 @@ class Comment:
         self.nearest_heading: Optional[str] = None
         # Requirement ID (DSSxxx format) found between comment and heading
         self.requirement_ID: Optional[str] = None
+        # Whether the comment is resolved/done
+        self.resolved: bool = False
 
     def __repr__(self) -> str:
         return f"Comment(id={self.id}, author={self.author}, parent_id={self.parent_id})"
@@ -173,6 +175,7 @@ def extract_comments_threads(docx_path: str) -> List[Comment]:
                 top_level.append(c)
 
     # Fallback threading using commentsExtended.xml (w15:paraIdParent) if parentId missing
+    # Also read resolved status from commentsExtended.xml
     try:
         with zipfile.ZipFile(docx_path, "r") as zf:
             with zf.open("word/commentsExtended.xml") as f:
@@ -187,6 +190,18 @@ def extract_comments_threads(docx_path: str) -> List[Comment]:
                 for ex in ext_root.findall("w15:commentEx", NS):
                     child_para = ex.get(f"{{{NS['w15']}}}paraId")
                     parent_para = ex.get(f"{{{NS['w15']}}}paraIdParent")
+                    done_attr = ex.get(f"{{{NS['w15']}}}done", "0")
+                    
+                    # Check if comment is resolved (for both top-level and replies)
+                    if child_para:
+                        child_id = para_to_id.get(child_para)
+                        if child_id is not None:
+                            child_comment = by_id.get(child_id)
+                            if child_comment is not None:
+                                # Mark as resolved if done="1"
+                                child_comment.resolved = (done_attr == "1")
+                    
+                    # Handle threading (only if both child and parent para exist)
                     if not child_para or not parent_para:
                         continue
                     child_id = para_to_id.get(child_para)
@@ -357,7 +372,31 @@ def extract_comments_threads(docx_path: str) -> List[Comment]:
     id_order = [c.id for c in comments if c.parent_id is None]
     top_level.sort(key=lambda c: id_order.index(c.id) if c.id in id_order else 10**9)
 
-    return top_level
+    # Filter out resolved comments recursively
+    def filter_resolved(comment: Comment) -> Optional[Comment]:
+        """Recursively filter out resolved comments and their resolved replies."""
+        if comment.resolved:
+            return None
+        
+        # Filter resolved replies
+        filtered_replies = []
+        for reply in comment.replies:
+            filtered_reply = filter_resolved(reply)
+            if filtered_reply is not None:
+                filtered_replies.append(filtered_reply)
+        
+        # Create a copy with filtered replies
+        comment.replies = filtered_replies
+        return comment
+    
+    # Filter out resolved comments from top-level threads
+    filtered_top_level = []
+    for thread in top_level:
+        filtered = filter_resolved(thread)
+        if filtered is not None:
+            filtered_top_level.append(filtered)
+    
+    return filtered_top_level
 
 def _print_replies_recursive(comment: Comment, depth: int = 1) -> None:
     if not comment.replies:
@@ -538,6 +577,28 @@ def main():
     # Export all threads to the specified Google Sheet (first worksheet)
     export_url = 'https://docs.google.com/spreadsheets/d/1dIdHfVIDn_YQo6F93SyN5e8JddLR1muHZgYyv6MAWRA/edit?gid=0#gid=0'
     export_threads_to_gsheet(threads, export_url)
+
+    # Collect and print unique authors
+    def collect_authors(comment: Comment, authors: set) -> None:
+        """Recursively collect authors from comment and all replies."""
+        if comment.author:
+            authors.add(comment.author)
+        for reply in comment.replies:
+            collect_authors(reply, authors)
+    
+    all_authors: set = set()
+    for thread in threads:
+        collect_authors(thread, all_authors)
+    
+    print("\n" + "=" * 80)
+    print("Unique Authors:")
+    print("-" * 80)
+    if all_authors:
+        for author in sorted(all_authors):
+            print(f"  - {author}")
+    else:
+        print("  (No authors found)")
+    print("=" * 80)
 
 if __name__ == "__main__":
     main()
