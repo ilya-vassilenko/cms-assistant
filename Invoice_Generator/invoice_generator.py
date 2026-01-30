@@ -8,10 +8,18 @@ import os
 import sys
 import json
 import argparse
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import calendar
+from decimal import Decimal, ROUND_HALF_UP
 from word_document_editor import WordDocumentEditor
 from google_doc_reader import GoogleDocReader
+from earnings_sheet_writer import EarningsSheetWriter
+
+
+def _round_up_half(value, decimals=2):
+    """Round value to specified decimal places, rounding 0.5 up."""
+    decimal_value = Decimal(str(value))
+    return float(decimal_value.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
 
 
 def create_invoice_folder(invoice_folder_base, last_month_date):
@@ -209,84 +217,84 @@ def process_google_sheets_data(editor, config):
 def process_hourly_rate_and_vat(editor, config, total_hours, currency, hourly_rate):
     """
     Process hourly rate and VAT calculations, then replace placeholders.
-    
+
     Args:
         editor (WordDocumentEditor): The Word document editor instance
         config (dict): Configuration dictionary
         total_hours (float): Total hours from Google Sheets
         currency (str): Currency from Google Sheets
         hourly_rate (float): Hourly rate from Google Sheets
-        
+
     Returns:
-        bool: True if processing was successful, False otherwise
+        tuple: (success: bool, amounts: dict or None) where amounts has
+               money_no_vat, vat_amount, money_total (all floats, rounded).
     """
     print(f"\nProcessing hourly rate and VAT calculations...")
-    
+
     try:
-        
         print(f"Currency: {currency}")
         print(f"Hourly rate: {hourly_rate}")
         print(f"Total hours: {total_hours}")
-        
+
         # Check VAT configuration
         vat_enabled = config.get('VAT')
         if vat_enabled is None:
             print("Error: 'VAT' configuration item is missing from config file!")
             sys.exit(1)
-        
+
         # Calculate base amount
         base_amount = total_hours * hourly_rate
-        
+
         # Replace [TOTAL_HOURS] placeholder
         total_hours_replacements = editor.find_and_replace_text("[TOTAL_HOURS]", str(total_hours))
         print(f"Replaced [TOTAL_HOURS] with: {total_hours} ({total_hours_replacements} replacements)")
-        
+
         if vat_enabled:
             print("VAT is enabled - calculating with 8.1% VAT")
-            
+
             # Calculate VAT amount (8.1%)
-            vat_amount = base_amount * 0.081
-            
-            # Calculate total with VAT
-            total_with_vat = base_amount + vat_amount
-            
-            # Format amounts with currency (using proper rounding that rounds 0.5 up)
-            from decimal import Decimal, ROUND_HALF_UP
-            
-            def round_up_half(value, decimals=2):
-                """Round value to specified decimal places, rounding 0.5 up"""
-                decimal_value = Decimal(str(value))
-                return float(decimal_value.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
-            
-            vat_formatted = f"{currency} {round_up_half(vat_amount, 2):,.2f}"
-            money_no_vat_formatted = f"{currency} {round_up_half(base_amount, 2):,.2f}"
-            money_total_formatted = f"{currency} {round_up_half(total_with_vat, 2):,.2f}"
-            
+            vat_amount_raw = base_amount * 0.081
+            total_with_vat = base_amount + vat_amount_raw
+
+            money_no_vat = _round_up_half(base_amount, 2)
+            vat_amount = _round_up_half(vat_amount_raw, 2)
+            money_total = _round_up_half(total_with_vat, 2)
+
+            vat_formatted = f"{currency} {vat_amount:,.2f}"
+            money_no_vat_formatted = f"{currency} {money_no_vat:,.2f}"
+            money_total_formatted = f"{currency} {money_total:,.2f}"
+
             # Replace placeholders
             vat_replacements = editor.find_and_replace_text("[VAT]", vat_formatted)
             money_no_vat_replacements = editor.find_and_replace_text("[MONEY_NO_VAT]", money_no_vat_formatted)
             money_total_replacements = editor.find_and_replace_text("[MONEY_TOTAL]", money_total_formatted)
-            
+
             print(f"Replaced [VAT] with: {vat_formatted} ({vat_replacements} replacements)")
             print(f"Replaced [MONEY_NO_VAT] with: {money_no_vat_formatted} ({money_no_vat_replacements} replacements)")
             print(f"Replaced [MONEY_TOTAL] with: {money_total_formatted} ({money_total_replacements} replacements)")
-            
+
+            amounts = {"money_no_vat": money_no_vat, "vat_amount": vat_amount, "money_total": money_total}
         else:
             print("VAT is disabled - calculating without VAT")
-            
-            # Format amount with currency
-            money_total_formatted = f"{currency} {base_amount:,.2f}"
-            
+
+            money_no_vat = _round_up_half(base_amount, 2)
+            vat_amount = 0.0
+            money_total = money_no_vat
+
+            money_total_formatted = f"{currency} {money_total:,.2f}"
+
             # Replace placeholder
             money_total_replacements = editor.find_and_replace_text("[MONEY_TOTAL]", money_total_formatted)
-            
+
             print(f"Replaced [MONEY_TOTAL] with: {money_total_formatted} ({money_total_replacements} replacements)")
-        
-        return True
-        
+
+            amounts = {"money_no_vat": money_no_vat, "vat_amount": vat_amount, "money_total": money_total}
+
+        return (True, amounts)
+
     except Exception as e:
         print(f"Error processing hourly rate and VAT: {e}")
-        return False
+        return (False, None)
 
 def main():
     parser = argparse.ArgumentParser(description='Generate invoice from template')
@@ -380,7 +388,8 @@ def main():
         
         # Process hourly rate and VAT calculations
         print("\n" + "="*50)
-        if not process_hourly_rate_and_vat(editor, config, total_hours, currency, hourly_rate):
+        vat_success, amounts = process_hourly_rate_and_vat(editor, config, total_hours, currency, hourly_rate)
+        if not vat_success:
             print("Error: Failed to process hourly rate and VAT calculations!")
             sys.exit(1)
         
@@ -457,10 +466,36 @@ def main():
                     print("No copy folder specified in config, skipping PDF copy")
             else:
                 print("Warning: PDF conversion failed, but Word document was saved successfully")
+
+            # Optional: add row to overall earnings list
+            last_month_str = (
+                WordDocumentEditor.format_period_display(custom_period_from, custom_period_to)
+                if (custom_period_from and custom_period_to)
+                else WordDocumentEditor.get_last_month_formatted()
+            )
+            today_date = (
+                alternative_invoice_date.date()
+                if alternative_invoice_date
+                else date.today()
+            )
+            pay_by_date = today_date + timedelta(days=30)
+            today_yyyymmdd = today_date.strftime("%Y-%m-%d")
+            pay_by_yyyymmdd = pay_by_date.strftime("%Y-%m-%d")
+            writer = EarningsSheetWriter(
+                config=config,
+                last_month_str=last_month_str,
+                money_no_vat=amounts["money_no_vat"],
+                vat_amount=amounts["vat_amount"],
+                money_total=amounts["money_total"],
+                currency=currency,
+                today_yyyymmdd=today_yyyymmdd,
+                pay_by_yyyymmdd=pay_by_yyyymmdd,
+            )
+            writer.run()
         else:
             print("Failed to save document!")
             sys.exit(1)
-        
+
     except Exception as e:
         print(f"Error processing document: {str(e)}")
         sys.exit(1)
