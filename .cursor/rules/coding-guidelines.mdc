@@ -1,0 +1,14 @@
+---
+name: coding-guidelines
+description: Coding guidelines.
+---
+
+# Project conventions (Cursor)
+
+- Python interpreter: use `python3` (not `python`).
+- Launch configurations: stored in `.vscode/launch.json`.
+- Be aware of the names for the following environment variables:
+  - `OPENAI_API_KEY` for the access to OpenAI API.
+  - `FIRECRAWL_API_KEY` for the access to FireCrawl.
+  - `OPENROUTER_API_KEY` for the access to OpenRouter.
+- use colorama for color-printing the logs

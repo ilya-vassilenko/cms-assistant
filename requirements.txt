@@ -8,4 +8,6 @@ google-auth-httplib2==0.1.1
 # ArticleWriter
 firecrawl-py
 json5
-openai
+openai# Frontify_Save_ISMS
+playwright
+beautifulsoup4
