@@ -40,6 +40,7 @@ except Exception:  # pragma: no cover
     def colorama_init(*_args, **_kwargs) -> None:  # type: ignore
         return None
 from docx import Document
+from docx.enum.style import WD_STYLE_TYPE
 
 
 @dataclass(frozen=True)
@@ -166,46 +167,37 @@ def apply_replacements(doc: Document, replacements: List[Replacement]) -> Tuple[
 
 def decrease_heading_levels(doc: Document) -> Tuple[int, int]:
     """
-    Decrease heading levels by one:
-    - Heading 1 -> Heading 2
-    - ...
-    - Heading 8 -> Heading 9
-    Heading 9 has no "Heading 10" in Word; it is left unchanged and counted as skipped.
+    Current policy requirement:
+    - Heading 1 -> Heading 3
+    - All other heading levels: unchanged
 
-    Returns: (changed_count, skipped_heading9_count)
+    Returns: (changed_count, skipped_count)
     """
     changed = 0
     skipped = 0
 
-    for p in doc.paragraphs:
+    # Ensure Heading 3 exists even in minimal documents (e.g., converted exports)
+    try:
+        heading3_style = doc.styles["Heading 3"]
+    except KeyError:
+        heading3_style = doc.styles.add_style("Heading 3", WD_STYLE_TYPE.PARAGRAPH, builtin=True)
+
+    for p in iter_paragraphs_in_document(doc):
         try:
-            style_name = (p.style.name or "").strip()
+            style_id = (getattr(p.style, "style_id", "") or "").strip()
         except Exception:
             continue
 
-        if not style_name.startswith("Heading "):
-            continue
-
-        parts = style_name.split()
-        if len(parts) != 2:
+        # Detect Heading 1 by style_id to work in localized Word installs.
+        if style_id != "Heading1":
             continue
 
         try:
-            level = int(parts[1])
-        except ValueError:
-            continue
-
-        if level >= 9:
-            skipped += 1
-            continue
-
-        new_style = f"Heading {level + 1}"
-        try:
-            p.style = new_style
+            p.style = heading3_style
             changed += 1
         except Exception:
             # Style might not exist in some templates; skip silently.
-            continue
+            skipped += 1
 
     return changed, skipped
 
@@ -374,7 +366,14 @@ def try_convert_to_docx(source_file: Path, tmpdir_path: Path, *, verbose: bool =
         return None
 
 
-def process_one_file(source_path: Path, output_folder: Path, replacements: List[Replacement], *, verbose: bool = False) -> bool:
+def process_one_file(
+    source_path: Path,
+    output_folder: Path,
+    replacements: List[Replacement],
+    *,
+    verbose: bool = False,
+    adjust_headings: bool = False,
+) -> bool:
     print(c_info(f"\nProcessing: {source_path}"))
 
     load_path = source_path
@@ -446,7 +445,10 @@ def process_one_file(source_path: Path, output_folder: Path, replacements: List[
         return False
 
     rep_total, formatting_loss = apply_replacements(doc, replacements)
-    headings_changed, headings_skipped = decrease_heading_levels(doc)
+    if adjust_headings:
+        headings_changed, headings_skipped = decrease_heading_levels(doc)
+    else:
+        headings_changed, headings_skipped = 0, 0
 
     output_folder.mkdir(parents=True, exist_ok=True)
     out_name = source_path.name
@@ -469,9 +471,12 @@ def process_one_file(source_path: Path, output_folder: Path, replacements: List[
     print(c_info(f"Replacements actions: {rep_total}"))
     if formatting_loss:
         print(c_warn(f"Paragraphs rewritten (formatting may be lost): {formatting_loss}"))
-    print(c_info(f"Heading level changes: {headings_changed}"))
-    if headings_skipped:
-        print(c_warn(f"Heading 9 skipped (no Heading 10): {headings_skipped}"))
+    if adjust_headings:
+        print(c_info(f"Heading 1 -> Heading 3 changes: {headings_changed}"))
+        if headings_skipped:
+            print(c_warn(f"Heading changes skipped (style missing/unsettable): {headings_skipped}"))
+    else:
+        print(c_info("Heading adjustment: disabled"))
 
     return True
 
@@ -494,6 +499,9 @@ def main() -> None:
     if not input_folder or not output_folder:
         print(c_err("Error: 'input_folder' and 'output_folder' must be set in the config file!"))
         sys.exit(1)
+
+    # Heading adjustment is intentionally opt-in (defaults to disabled).
+    adjust_headings = bool(config.get("adjust_headings", False))
 
     try:
         replacements = parse_replacements(config)
@@ -541,7 +549,7 @@ def main() -> None:
     ok = 0
     fail = 0
     for f in files:
-        if process_one_file(f, output_path, replacements, verbose=verbose):
+        if process_one_file(f, output_path, replacements, verbose=verbose, adjust_headings=adjust_headings):
             ok += 1
         else:
             fail += 1
