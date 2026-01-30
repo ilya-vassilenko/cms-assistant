@@ -30,6 +30,20 @@ class GeneratedImage:
         }.get(m, "png")
 
 
+@dataclass(frozen=True)
+class OpenRouterNoImageError(Exception):
+    """
+    Raised when OpenRouter returns a valid response but no image payload is present.
+    Carries the parsed response for structured logging upstream.
+    """
+
+    message: str
+    response: Dict[str, Any]
+
+    def __str__(self) -> str:  # pragma: no cover
+        return self.message
+
+
 class OpenRouterImageGenerator:
     """
     Calls OpenRouter image generation via chat completions.
@@ -89,10 +103,30 @@ class OpenRouterImageGenerator:
 
         data_url = self._extract_first_image_data_url(parsed)
         if not data_url:
-            raise RuntimeError(f"OpenRouter response did not contain an image. Keys: {list(parsed.keys())}")
+            raise OpenRouterNoImageError(
+                message="OpenRouter response did not contain an image.",
+                response=parsed,
+            )
 
         mime_type, image_bytes = self._decode_data_url(data_url)
         return GeneratedImage(mime_type=mime_type, image_bytes=image_bytes)
+
+    @staticmethod
+    def extract_text_message(parsed: Dict[str, Any]) -> Optional[str]:
+        """
+        Best-effort extraction of assistant text content from a chat response.
+        """
+        try:
+            choices = parsed.get("choices") or []
+            if not choices:
+                return None
+            msg = (choices[0] or {}).get("message") or {}
+            content = msg.get("content")
+            if isinstance(content, str):
+                return content
+        except Exception:
+            return None
+        return None
 
     @staticmethod
     def _extract_first_image_data_url(parsed: Dict[str, Any]) -> Optional[str]:

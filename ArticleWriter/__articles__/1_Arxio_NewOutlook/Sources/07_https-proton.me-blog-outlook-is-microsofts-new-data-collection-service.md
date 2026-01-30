@@ -6,7 +6,7 @@ Everyone talks about the [privacy-washing](https://proton.me/blog/google-privacy
 
 Here’s how and why.
 
-## **Microsoft shares your data with 801 third parties**
+### **Microsoft shares your data with 801 third parties**
 
 Some European users who download the new Outlook for Windows will encounter a modal with a troubling disclosure about how Microsoft and several hundred third parties process their data:
 
@@ -30,7 +30,7 @@ Mac users logged into the new Outlook will even encounter ads that appear as inb
 
 ![](https://res.cloudinary.com/dbulfrlrz/images/w_1234,h_778,c_scale/f_auto,q_auto/v1707559065/wp-pme/Microsoft-Ads/Microsoft-Ads.png?_i=AA)
 
-## **Microsoft’s “Advertising Partners”**
+### **Microsoft’s “Advertising Partners”**
 
 Thanks to the EU’s General Data Protection Regulation, Europeans are at least informed that a small village of third parties will be able to look at their data. Americans, thanks to their government’s refusal to pass privacy legislation, are never even informed this is happening.
 
@@ -50,7 +50,7 @@ Such policies are usually [long, rambling, and notoriously difficult to understa
 
 With the new Outlook, Microsoft forces users to enter maze-like privacy statements to seize back some control of their data. Of course, Microsoft knows that almost no one [reads privacy policies(new window)](https://www.pewresearch.org/internet/2019/11/15/americans-attitudes-and-experiences-with-privacy-policies-and-laws/). If everyone understood those policies, revenue would be jeopardized.
 
-## **New Outlook steals your email password**
+### **New Outlook steals your email password**
 
 Microsoft’s integration of Outlook with cloud services has [raised privacy alarm bells(new window)](https://news.ycombinator.com/item?id=38219568).
 
@@ -72,7 +72,7 @@ Professor Ulrich Kelber, the Federal Commissioner for Data Protection and Freedo
 
 Microsoft has not issued a public response to criticisms about its latest data grab. But the software giant has been upfront about its push to use targeted advertising to reach new revenue heights. In 2021, Microsoft Advertising earned $10 billion. But [Microsoft wants to double that total(new window)](https://www.businessinsider.com/how-microsoft-advertising-plans-to-grow-a-20-billion-business-2022-10?r=US&IR=T).
 
-## **What kind of data does Microsoft collect?**
+### **What kind of data does Microsoft collect?**
 
 Per its advertising policy, Microsoft does not use personal data from emails, chats, or documents to target ads. But the ads that pop up may be selected based on other data that gave the company insight about you – such as “ [your interests and favorites, your location, your transactions, how you use our products, your search queries, or the content you view(new window)](https://privacy.microsoft.com/en-us/privacystatement#mainadvertisingmodule).”
 
@@ -101,7 +101,7 @@ The policy offers a glimpse of [where your data might end up(new window)](https:
 - Payment processing providers
 - Third parties that perform online advertising services for Microsoft
 
-## **Microsoft steers toward data dollars**
+### **Microsoft steers toward data dollars**
 
 When Google rolled out a [privacy policy expanding its powers to collect data(new window)](https://googleblog.blogspot.com/2012/01/updating-our-privacy-policies-and-terms.html), the company drew criticisms from regulators and rivals, including Microsoft, which took out [full-page newspaper ads(new window)](https://cdn.geekwire.com/wp-content/uploads/2012/02/MICUS0004299_NYT_v2-2.pdf) telling Google users that Google did not respect their privacy.
 
@@ -127,7 +127,7 @@ In [a 2022 interview with Business Insider(new window)](https://www.businessinsi
 
 Wilk dubbed Microsoft’s advertising push a “ [newfound religion(new window)](https://www.adexchanger.com/online-advertising/microsoft-ads-chief-rob-wilk-on-why-advertising-is-the-companys-newfound-religion/).”
 
-## **Surveillance in the name of profit**
+### **Surveillance in the name of profit**
 
 Microsoft claims that collecting your data is “ [to provide you rich, interactive experiences.(new window)](https://privacy.microsoft.com/en-us/privacystatement)”
 
@@ -139,7 +139,7 @@ There are other business models out there deployed by companies that focus first
 
 Proton is one of them.
 
-## **Switch to real privacy**
+### **Switch to real privacy**
 
 Proton uses end-to-end encryption to protect your [emails](https://proton.me/mail), [calendar](https://proton.me/calendar), [files stored in the cloud](https://proton.me/drive), [passwords and login credentials](https://proton.me/pass), and your [internet connection(new window)](https://protonvpn.com/). Our security architecture is designed to keep your data invisible even to us, as our business model gives you more privacy, not less.
 

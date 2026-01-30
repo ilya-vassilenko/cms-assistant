@@ -26,3 +26,4 @@ Spezifische Punkte, die du einhalten musst:
 - Verwende Schweizer Version vom Deutsch - "ss" anstatt "ß".
 - Bei Personen schreibe beide Geschlechte: z.B. "Kundinnen und Kunden", bei Unternehmen nur Geschlechtsneutral: "Firmenkunden", "Drittanbieter".
 - Schreibe "E-Mails" anstatt "Email".
+- Use a dot as the decimal separator (e.g. "12.2%" instead of "12,2%").
