@@ -175,19 +175,58 @@ def collect_filtered_rows(
     return result
 
 
+# Control ID prefix -> section title (order: A.5, A.6, A.7, A.8)
+CONTROL_SECTIONS = [
+    ("A.5", "Organizational controls:"),
+    ("A.6", "People-related controls:"),
+    ("A.7", "Physical controls:"),
+    ("A.8", "Technological controls:"),
+]
+
+
+def _group_controls_by_prefix(
+    control_items: List[Tuple[str, str, str]],
+) -> List[Tuple[str, List[Tuple[str, str, str]]]]:
+    """Group (id, title, obs) by A.5, A.6, A.7, A.8; then append 'Other' for non-matching."""
+    groups: Dict[str, List[Tuple[str, str, str]]] = {prefix: [] for prefix, _ in CONTROL_SECTIONS}
+    groups["_other"] = []
+    for item in control_items:
+        id_val = (item[0] or "").strip()
+        placed = False
+        for prefix, _ in CONTROL_SECTIONS:
+            if id_val.startswith(prefix):
+                groups[prefix].append(item)
+                placed = True
+                break
+        if not placed:
+            groups["_other"].append(item)
+    result: List[Tuple[str, List[Tuple[str, str, str]]]] = []
+    for prefix, title in CONTROL_SECTIONS:
+        if groups[prefix]:
+            result.append((title, groups[prefix]))
+    if groups["_other"]:
+        result.append(("Other controls:", groups["_other"]))
+    return result
+
+
 def _write_doc_content(
     docs_service: Any,
     document_id: str,
     main_items: List[Tuple[str, str, str]],
     control_items: List[Tuple[str, str, str]],
 ) -> None:
-    """Replace document body with two sections (Main requirements, Controls) as bullet lists; 'ID Title:' in bold."""
-    main_heading = "Main requirements\n\n"
-    control_heading = "\nControls\n\n"
+    """Replace document body: main requirements with heading, then control sections by A.5/A.6/A.7/A.8; 'ID Title:' in bold."""
+    main_heading = "Main requirements of the ISO 27001:2022:\n\n"
+    control_sections = _group_controls_by_prefix(control_items)
 
-    lines_main = [f"{id_val} {title_val}: {obs_val}\n" for id_val, title_val, obs_val in main_items]
-    lines_control = [f"{id_val} {title_val}: {obs_val}\n" for id_val, title_val, obs_val in control_items]
-    text = main_heading + "".join(lines_main) + control_heading + "".join(lines_control)
+    parts: List[str] = [main_heading]
+    for (id_val, title_val, obs_val) in main_items:
+        parts.append(f"{id_val} {title_val}: {obs_val}\n")
+    for section_title, items in control_sections:
+        parts.append(f"\n{section_title}\n\n")
+        for (id_val, title_val, obs_val) in items:
+            parts.append(f"{id_val} {title_val}: {obs_val}\n")
+    text = "".join(parts)
 
     doc = docs_service.documents().get(documentId=document_id).execute()
     body = doc.get("body", {})
@@ -202,7 +241,6 @@ def _write_doc_content(
         requests.append({"deleteContentRange": {"range": {"startIndex": 1, "endIndex": body_end - 1}}})
     requests.append({"insertText": {"location": {"index": 1}, "text": text}})
 
-    new_length = len(text)
     pos = 1
     bullet_ranges: List[Tuple[int, int]] = []
     bold_ranges: List[Tuple[int, int]] = []
@@ -216,15 +254,16 @@ def _write_doc_content(
         bold_end = start + len(id_val) + 1 + len(title_val) + 2
         bold_ranges.append((start, bold_end))
         pos = end
-    pos += len(control_heading)
-    for (id_val, title_val, obs_val) in control_items:
-        line = f"{id_val} {title_val}: {obs_val}\n"
-        start = pos
-        end = pos + len(line)
-        bullet_ranges.append((start, end))
-        bold_end = start + len(id_val) + 1 + len(title_val) + 2
-        bold_ranges.append((start, bold_end))
-        pos = end
+    for section_title, items in control_sections:
+        pos += len(f"\n{section_title}\n\n")
+        for (id_val, title_val, obs_val) in items:
+            line = f"{id_val} {title_val}: {obs_val}\n"
+            start = pos
+            end = pos + len(line)
+            bullet_ranges.append((start, end))
+            bold_end = start + len(id_val) + 1 + len(title_val) + 2
+            bold_ranges.append((start, bold_end))
+            pos = end
 
     for start, end in bullet_ranges:
         requests.append({
