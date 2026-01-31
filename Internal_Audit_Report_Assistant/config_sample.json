@@ -1,0 +1,12 @@
+{
+  "iso_table_url": "https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/edit",
+  "iso_table_tab": "Sheet1",
+  "filter_column": "Include",
+  "control_id_column": "Control ID",
+  "control_title_column": "Control Title",
+  "input_column": "Text to correct",
+  "output_column": "Corrected text",
+  "starting_row": 2,
+  "llm_model": "anthropic/claude-3.5-sonnet",
+  "prompt": "Correct and improve the following text. Output only the corrected text, no explanations.\n\n"
+}
