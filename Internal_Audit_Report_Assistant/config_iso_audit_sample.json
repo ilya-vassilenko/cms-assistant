@@ -7,7 +7,7 @@
     "title_column": "Title",
     "observation_column": "Observation for the report",
     "recommendation_column": "Recommendation for the report",
-    "filter_column": "26"
+    "filter_column": "Include"
   },
   "controls": {
     "tab": "ISO27001-2022-Annex",
@@ -15,6 +15,6 @@
     "title_column": "Title",
     "observation_column": "Observation for the report",
     "recommendation_column": "Recommendation for the report",
-    "filter_column": "26"
+    "filter_column": "Include"
   }
 }

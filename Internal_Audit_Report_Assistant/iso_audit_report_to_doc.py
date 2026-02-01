@@ -33,7 +33,13 @@ OAUTH_SCOPES = [
     "https://www.googleapis.com/auth/documents",
 ]
 
-SECTION_COLUMN_KEYS = ["id_column", "title_column", "observation_column", "filter_column"]
+SECTION_COLUMN_KEYS = [
+    "id_column",
+    "title_column",
+    "observation_column",
+    "recommendation_column",
+    "filter_column",
+]
 
 
 def _success(msg: str) -> str:
@@ -160,8 +166,8 @@ def collect_filtered_rows(
     all_values: List[List[Any]],
     section: dict,
     col: Dict[str, int],
-) -> List[Tuple[str, str, str]]:
-    """From row 2 onward, filter where filter_column == 'x'; return list of (id, title, observation)."""
+) -> List[Tuple[str, str, str, str]]:
+    """From row 2 onward, filter where filter_column == 'x'; return list of (id, title, observation, recommendation)."""
     result = []
     for row in all_values[1:]:
         raw = row[col["filter_column"]] if col["filter_column"] < len(row) else ""
@@ -171,7 +177,9 @@ def collect_filtered_rows(
         id_val = (row[col["id_column"]] if col["id_column"] < len(row) else "").strip()
         title_val = (row[col["title_column"]] if col["title_column"] < len(row) else "").strip()
         obs_val = (row[col["observation_column"]] if col["observation_column"] < len(row) else "").strip()
-        result.append((id_val, title_val, obs_val))
+        raw_rec = row[col["recommendation_column"]] if col["recommendation_column"] < len(row) else ""
+        rec_val = str(raw_rec).strip() if raw_rec is not None else ""
+        result.append((id_val, title_val, obs_val, rec_val))
     return result
 
 
@@ -183,12 +191,14 @@ CONTROL_SECTIONS = [
     ("A.8", "Technological controls:"),
 ]
 
+RECOMMENDATION_ID_PREFIX = "#INT.26."
+
 
 def _group_controls_by_prefix(
-    control_items: List[Tuple[str, str, str]],
-) -> List[Tuple[str, List[Tuple[str, str, str]]]]:
-    """Group (id, title, obs) by A.5, A.6, A.7, A.8; then append 'Other' for non-matching."""
-    groups: Dict[str, List[Tuple[str, str, str]]] = {prefix: [] for prefix, _ in CONTROL_SECTIONS}
+    control_items: List[Tuple[str, str, str, str]],
+) -> List[Tuple[str, List[Tuple[str, str, str, str]]]]:
+    """Group (id, title, obs, rec) by A.5, A.6, A.7, A.8; then append 'Other' for non-matching."""
+    groups: Dict[str, List[Tuple[str, str, str, str]]] = {prefix: [] for prefix, _ in CONTROL_SECTIONS}
     groups["_other"] = []
     for item in control_items:
         id_val = (item[0] or "").strip()
@@ -200,7 +210,7 @@ def _group_controls_by_prefix(
                 break
         if not placed:
             groups["_other"].append(item)
-    result: List[Tuple[str, List[Tuple[str, str, str]]]] = []
+    result: List[Tuple[str, List[Tuple[str, str, str, str]]]] = []
     for prefix, title in CONTROL_SECTIONS:
         if groups[prefix]:
             result.append((title, groups[prefix]))
@@ -209,23 +219,71 @@ def _group_controls_by_prefix(
     return result
 
 
+def _build_recommendations_list(
+    main_items: List[Tuple[str, str, str, str]],
+    control_items: List[Tuple[str, str, str, str]],
+) -> List[Tuple[str, str, str]]:
+    """Build list of (rec_id, 'ID Title', recommendation) in order: main first, then A.5, A.6, A.7, A.8, Other; only non-empty recommendation."""
+    result: List[Tuple[str, str, str]] = []
+    n = 1
+    for (id_val, title_val, _obs, rec_val) in main_items:
+        if (rec_val or "").strip():
+            result.append((f"{RECOMMENDATION_ID_PREFIX}{n}", f"{id_val} {title_val}".strip(), rec_val.strip()))
+            n += 1
+    control_sections = _group_controls_by_prefix(control_items)
+    for _section_title, items in control_sections:
+        for (id_val, title_val, _obs, rec_val) in items:
+            if (rec_val or "").strip():
+                result.append((f"{RECOMMENDATION_ID_PREFIX}{n}", f"{id_val} {title_val}".strip(), rec_val.strip()))
+                n += 1
+    return result
+
+
+def _get_table_cell_indices(doc: dict) -> List[int]:
+    """Find the last table in body and return list of insertion indices for each cell (row-major: row0col0, row0col1, ...).
+    Uses the paragraph's startIndex so insertText is inside the paragraph bounds."""
+    body = doc.get("body", {})
+    content = body.get("content", []) or []
+    indices: List[int] = []
+    for element in content:
+        if "table" not in element:
+            continue
+        indices = []
+        table = element["table"]
+        rows = table.get("tableRows", [])
+        for row in rows:
+            for cell in row.get("tableCells", []):
+                cell_content = cell.get("content", [])
+                if not cell_content:
+                    continue
+                first = cell_content[0]
+                if "paragraph" not in first:
+                    continue
+                start = first.get("startIndex", 0)
+                indices.append(start)
+    return indices
+
+
 def _write_doc_content(
     docs_service: Any,
     document_id: str,
-    main_items: List[Tuple[str, str, str]],
-    control_items: List[Tuple[str, str, str]],
+    main_items: List[Tuple[str, str, str, str]],
+    control_items: List[Tuple[str, str, str, str]],
+    recommendations: List[Tuple[str, str, str]],
 ) -> None:
-    """Replace document body: main requirements with heading, then control sections by A.5/A.6/A.7/A.8; 'ID Title:' in bold."""
+    """Replace document body: main requirements with heading, then control sections by A.5/A.6/A.7/A.8; 'ID Title:' in bold; then Recommendations table if any."""
     main_heading = "Main requirements of the ISO 27001:2022:\n\n"
     control_sections = _group_controls_by_prefix(control_items)
 
     parts: List[str] = [main_heading]
-    for (id_val, title_val, obs_val) in main_items:
+    for (id_val, title_val, obs_val, _rec) in main_items:
         parts.append(f"{id_val} {title_val}: {obs_val}\n")
     for section_title, items in control_sections:
         parts.append(f"\n{section_title}\n\n")
-        for (id_val, title_val, obs_val) in items:
+        for (id_val, title_val, obs_val, _rec) in items:
             parts.append(f"{id_val} {title_val}: {obs_val}\n")
+    if recommendations:
+        parts.append("\n\nRecommendations\n\n")
     text = "".join(parts)
 
     doc = docs_service.documents().get(documentId=document_id).execute()
@@ -246,7 +304,7 @@ def _write_doc_content(
     bold_ranges: List[Tuple[int, int]] = []
 
     pos += len(main_heading)
-    for (id_val, title_val, obs_val) in main_items:
+    for (id_val, title_val, obs_val, _rec) in main_items:
         line = f"{id_val} {title_val}: {obs_val}\n"
         start = pos
         end = pos + len(line)
@@ -256,7 +314,7 @@ def _write_doc_content(
         pos = end
     for section_title, items in control_sections:
         pos += len(f"\n{section_title}\n\n")
-        for (id_val, title_val, obs_val) in items:
+        for (id_val, title_val, obs_val, _rec) in items:
             line = f"{id_val} {title_val}: {obs_val}\n"
             start = pos
             end = pos + len(line)
@@ -281,7 +339,39 @@ def _write_doc_content(
             }
         })
 
+    if recommendations:
+        requests.append({
+            "insertTable": {
+                "rows": 1 + len(recommendations),
+                "columns": 3,
+                "endOfSegmentLocation": {"segmentId": ""},
+            }
+        })
+
     docs_service.documents().batchUpdate(documentId=document_id, body={"requests": requests}).execute()
+
+    if not recommendations:
+        return
+
+    doc = docs_service.documents().get(documentId=document_id).execute()
+    cell_indices = _get_table_cell_indices(doc)
+    if len(cell_indices) < 3 * (1 + len(recommendations)):
+        return
+    cell_texts: List[str] = ["ID", "Requirement / control", "Recommendation"]
+    for (rec_id, req_control, rec_text) in recommendations:
+        cell_texts.append(rec_id)
+        cell_texts.append(req_control)
+        cell_texts.append(rec_text)
+    index_text_pairs = list(zip(cell_indices, cell_texts))
+    index_text_pairs.sort(key=lambda p: p[0])
+    offset = 0
+    fill_requests: List[Dict[str, Any]] = []
+    for idx, cell_text in index_text_pairs:
+        fill_requests.append({
+            "insertText": {"location": {"index": idx + offset}, "text": cell_text},
+        })
+        offset += len(cell_text)
+    docs_service.documents().batchUpdate(documentId=document_id, body={"requests": fill_requests}).execute()
 
 
 def run(config_path: str) -> None:
@@ -348,10 +438,14 @@ def run(config_path: str) -> None:
         print(_error(f"Could not extract document ID from: {config['google_doc_url']}"))
         sys.exit(1)
 
+    recommendations = _build_recommendations_list(main_items, control_items)
+    if recommendations:
+        print(_success(f"Recommendations: {len(recommendations)} rows for table."))
+
     print(_info("Writing to Google Doc..."))
     try:
         docs_service = build("docs", "v1", credentials=creds)
-        _write_doc_content(docs_service, doc_id, main_items, control_items)
+        _write_doc_content(docs_service, doc_id, main_items, control_items, recommendations)
     except Exception as e:
         print(_error(f"Failed to update Google Doc: {e}"))
         sys.exit(1)
