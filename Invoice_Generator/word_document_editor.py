@@ -118,7 +118,7 @@ class WordDocumentEditor:
         if from_month == to_month:
             return from_month
         else:
-            return f"the period {from_month} - {to_month}"
+            return f"{from_month} - {to_month}"
     
     @staticmethod
     def format_period_folder_name(period_from: datetime, period_to: datetime) -> str:

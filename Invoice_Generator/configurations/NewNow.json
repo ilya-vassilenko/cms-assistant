@@ -1,5 +1,6 @@
 {
-    "GSheet": "NewNow",
+    "GSheet": "14.NewNow",
+    "email_contact_names": "Katja",
     "template": "Invoice_Generator/templates/Invoice-ComplianceMadeSimple-NewNow.[LAST_MONTH].[TODAY].docx",
     "invoice_folder": "/Users/vasilenkoilya/Dropbox/05. Work/2 Customers/14 NewNow/__RECHNUNGEN__/",
     "copy_invoice_PDF_to_folder": "/Users/vasilenkoilya/Dropbox/05. Work/4 My BIZ and brand/1 GmbH/2 Earnings/14 NewNow/",

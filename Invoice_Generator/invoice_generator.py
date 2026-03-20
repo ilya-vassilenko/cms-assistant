@@ -134,10 +134,10 @@ def process_google_sheets_data(editor, config):
         work_items = reader.retrieve_work_items()
         
         if not work_items:
-            print("Error: No work items found for the specified month")
+            print("Error: No work items found for the specified period")
             print("Please check:")
             print(f"1. Are there work items in the '{sheet_name}' sheet?")
-            print(f"2. Do the dates in column A match the target month: {target_month.strftime('%B %Y')}?")
+            print(f"2. Do the dates in column A fall within: {period_from.strftime('%Y-%m-%d')} to {period_to.strftime('%Y-%m-%d')}?")
             print("3. Are the dates in the correct format (YYYY-MM-DD, MM/DD/YYYY, etc.)?")
             print("Invoice generation cannot continue without work items")
             sys.exit(1)
@@ -492,6 +492,26 @@ def main():
                 pay_by_yyyymmdd=pay_by_yyyymmdd,
             )
             writer.run()
+
+            # Compose and print email for copy/paste
+            email_contact_names = config.get("email_contact_names", "Sir/Madam").strip() or "Sir/Madam"
+            if custom_period_from and custom_period_to:
+                invoice_period = "the period " + WordDocumentEditor.format_period_display(custom_period_from, custom_period_to)
+            else:
+                invoice_period = last_month_str
+            email_body = f"""
+Dear {email_contact_names}
+
+Please find attached the invoice for {invoice_period}.
+
+Thanks for the trust,
+Ilya
+"""
+            print("\n" + "="*50)
+            print("Email (copy/paste):")
+            print("="*50)
+            print(email_body.strip())
+            print("="*50)
         else:
             print("Failed to save document!")
             sys.exit(1)

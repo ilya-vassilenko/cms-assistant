@@ -1,0 +1,38 @@
+# Instructions: Article "ISO 42001:2023 – was, warum und wann?"
+
+## Ziel
+Schreibe einen praxisorientierten Artikel über den KI-Managementstandard ISO/IEC 42001:2023, der Fachleuten aus IT, Compliance und Management erklärt, was der Standard ist, für wen er relevant ist und wie der Weg zur Zertifizierung aussieht.
+
+## Einstieg (Eye-Catcher)
+Beginne mit einem prägnanten Intro-Satz oder einer kurzen Einleitung, die das Thema einordnet und das Interesse weckt – etwa: Warum gerade jetzt ein globaler Standard für KI-Managementsysteme entscheidend ist und was Unternehmen davon haben.
+
+## Inhaltliche Punkte (Detailteil)
+Behandle die folgenden Fragen in dieser Reihenfolge, mit klaren Überschriften:
+
+1) Was ist ein „AI Management System (AIMS)"?
+   Erkläre den Begriff und den Zweck eines AIMS: Was wird damit gesteuert, wer ist verantwortlich, und warum brauchen Organisationen ein solches System?
+
+2) Was ist der KI-Standard ISO/IEC 42001:2023?
+   Gib einen Überblick über Struktur, Herkunft und Kernanforderungen des Standards. Gehe auf die High Level Structure (HLS) ein und erkläre, worauf der Standard inhaltlich fokussiert (z.B. Risikobehandlung, Transparenz, Verantwortlichkeit, Lieferkette).
+
+3) Für welche KI-Systeme ist dieser Standard relevant?
+   Kläre, welche Typen von KI-Anwendungen und welche Organisationsrollen (Anbieter, Betreiber, Anwender) der Standard adressiert. Geh auf den Geltungsbereich ("Scope") ein.
+
+4) Wann lohnt sich eine Zertifizierung?
+   Diskutiere konkrete Szenarien und Entscheidungskriterien: Regulatorischer Druck, Kundenanforderungen, Wettbewerbsdifferenzierung, Unternehmensgrösse, KI-Reifegrad. Nenne auch Fälle, wo eine Zertifizierung noch nicht sinnvoll ist.
+
+5) Wie ist der Zusammenhang von AI Governance und diesem Standard?
+   Erkläre, wie ISO 42001 in ein übergeordnetes AI-Governance-Framework eingebettet ist. Was leistet der Standard, was geht über ihn hinaus?
+
+6) Wie hängt ISO 42001 mit ISO 27001 zusammen?
+   Zeige Gemeinsamkeiten (HLS, Managementsystem-Ansatz, Risikobasierung) und Unterschiede auf. Erkläre, wie die beiden Standards sich ergänzen und wie eine integrierte Implementierung aussehen kann (z.B. gemeinsame Policies, gemeinsames ISMS/AIMS).
+
+7) Wie sieht der praktische Weg zur Zertifizierung aus?
+   Beschreibe die typischen Schritte: Gap-Analyse, Aufbau des AIMS, interne Audits, Zertifizierungsaudit (Stage 1 / Stage 2) durch eine akkreditierte Zertifizierungsstelle, Überwachungsaudits. Gib Hinweise zu Aufwand und typischen Stolpersteinen.
+
+## Stil
+Sachlich, präzise, praxisnah – ohne unnötige Ausschmückung. Fachbegriffe dürfen verwendet werden, sollten aber kurz erklärt werden.
+Spezifische Punkte, die du einhalten musst:
+- Verwende Schweizer Version vom Deutsch – "ss" anstatt "ß".
+- Bei Personen schreibe beide Geschlechte: z.B. "Leiterinnen und Leiter", bei Unternehmen/Rollen nur geschlechtsneutral: "Anbieter", "Betreiber", "Unternehmen".
+- Use a dot as the decimal separator (e.g. "12.2%" instead of "12,2%").

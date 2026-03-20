@@ -1,0 +1,1 @@
+Der folgende Text ist beinhaltet meine Beobachtungen im Internal Audit nach ISO 27001:2022. Korrigiere mein Deutsch, behalte debei meinen Stil und ändere so wenig wie möglich. Erfinde auch keine weiteren Inhalte - es geht nur um Proof-Korrektur des Textes. Jetzt, hier ist der Text für die Korrektur: {{L}}

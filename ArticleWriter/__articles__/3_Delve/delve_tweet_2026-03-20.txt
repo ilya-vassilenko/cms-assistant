@@ -1,0 +1,15 @@
+https://x.com/ohryansbelt/status/2034752685631574022
+
+Delve, a YC-backed compliance startup that raised $32 million, has been accused of systematically faking SOC 2, ISO 27001, HIPAA, and GDPR compliance reports for hundreds of clients. According to a detailed Substack investigation by DeepDelver, a leaked Google spreadsheet containing links to hundreds of confidential draft audit reports revealed that Delve generates auditor conclusions before any auditor reviews evidence, uses the same template across 99.8% of reports, and relies on Indian certification mills operating through empty US shells instead of the "US-based CPA firms" they advertise. Here's the breakdown:
+
+> 493 out of 494 leaked SOC 2 reports allegedly contain identical boilerplate text, including the same grammatical errors and nonsensical sentences, with only a company name, logo, org chart, and signature swapped in
+> Auditor conclusions and test procedures are reportedly pre-written in draft reports before clients even provide their company description, which would violate AICPA independence rules requiring auditors to independently design tests and form conclusions
+> All 259 Type II reports claim zero security incidents, zero personnel changes, zero customer terminations, and zero cyber incidents during the observation period, with identical "unable to test" conclusions across every client
+> Delve's "US-based auditors" are actually Accorp and Gradient, described as Indian certification mills operating through US shell entities. 99%+ of clients reportedly went through one of these two firms over the past 6 months
+> The platform allegedly publishes fully populated trust pages claiming vulnerability scanning, pentesting, and data recovery simulations before any compliance work has been done
+> Delve pre-fabricates board meeting minutes, risk assessments, security incident simulations, and employee evidence that clients can adopt with a single click, according to the author
+> Most "integrations" are just containers for manual screenshots with no actual API connections. The author describes the platform as a "SOC 2 template pack with a thin SaaS wrapper"
+> When the leak was exposed, CEO Karun Kaushik emailed clients calling the allegations "falsified claims" from an "AI-generated email" and stated no sensitive data was accessed, while the reports themselves contained private signatures and confidential architecture diagrams
+> Companies relying on these reports could face criminal liability under HIPAA and fines up to 4% of global revenue under GDPR for compliance violations they believed were resolved
+> When clients threaten to leave, Delve reportedly pairs them with an external vCISO for manual off-platform work, which the author argues proves their own platform can't deliver real compliance
+> Delve's sales price dropped from $15,000 to $6,000 with ISO 27001 and a penetration test thrown in when a client mentioned considering a competitor

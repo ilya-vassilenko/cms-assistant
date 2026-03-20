@@ -1,13 +1,13 @@
 {
-  "google_sheet_url": "https://docs.google.com/spreadsheets/d/1_gqxNBiNBt9gg9ftVNhgIFQcUMjvEI4ClfwO3YkWoNI/edit?gid=2102435391#gid=2102435391",
-  "google_doc_url": "https://docs.google.com/document/d/1aHnim5vSCJKte_yC28tU-aQhLgLdk1no5VPT7COKIko/edit?tab=t.0",
+  "google_sheet_url": "https://docs.google.com/spreadsheets/d/1SMp0Kzt7A4RmimLi9lQ7iOcAwFt19DgOPwJcRWrYEIw/edit?gid=80649837#gid=80649837",
+  "google_doc_url": "https://docs.google.com/document/d/1wWaspnm0ZsQpvsel3Vl638qgVyf99DwJjXZ7Ki-eX58/edit?tab=t.0",
   "main_requirements": {
     "tab": "ISO27001-2022-Requirements",
     "id_column": "ID",
     "title_column": "Title",
     "observation_column": "Observation for the report",
     "recommendation_column": "Recommendation for the report",
-    "filter_column": "26"
+    "filter_column": "2026"
   },
   "controls": {
     "tab": "ISO27001-2022-Annex",
@@ -15,6 +15,6 @@
     "title_column": "Title",
     "observation_column": "Observation for the report",
     "recommendation_column": "Recommendation for the report",
-    "filter_column": "26"
+    "filter_column": "2026"
   }
 }
