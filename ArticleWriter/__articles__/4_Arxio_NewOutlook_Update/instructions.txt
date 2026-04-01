@@ -1,0 +1,29 @@
+# Instructions: Article “Marketing-Überwachung mit dem neuen Microsoft Outlook”
+
+## Ziel
+Schreibe einen Artikel über Datenschutz-/Sicherheits-/Compliance-Risiken durch den neuen web-basierten Outlook-Client (New Outlook).
+
+## Einstieg (Eye-Catcher)
+Beginne mit einem prägnanten Intro-Satz, sinngemäß:
+„Mit dem neuen web-basierten Outlook-Client soll Microsoft Passwörter von Nicht-MS-Accounts an eigene Server kopieren sowie vollständige Kopien aller E-Mails für Profiling erstellen – in einigen Geografien sogar ohne Einwilligung und Notifikation.“
+
+## Wer ist betroffen?
+Erkläre kurz, wer betroffen ist, sinngemäß:
+- Privatkunden, die den neuen Outlook für Nicht-Microsoft-E-Mailkonten nutzen.
+- Enterprise-Kunden ab 2026, sobald das neue Outlook in M365 eingeführt wird.
+
+## Inhaltliche Punkte (Detailteil)
+Behandle die folgenden Fragen in dieser Reihenfolge, mit klaren Überschriften:
+
+1) Was ändert sich im neuen web-basierten Outlook?
+2) In welchen Szenarien entstehen dadurch welche Datenschutz-/Sicherheits-/Compliance-Risiken?
+3) Was ist die Timeline für die Neuerungen?
+4) Wie kann man die Risiken adressieren?
+
+## Stil
+Sachlich, präzise, ohne unnötige Ausschmückung.
+Spezifische Punkte, die du einhalten musst:
+- Verwende Schweizer Version vom Deutsch - "ss" anstatt "ß".
+- Bei Personen schreibe beide Geschlechte: z.B. "Kundinnen und Kunden", bei Unternehmen nur Geschlechtsneutral: "Firmenkunden", "Drittanbieter".
+- Schreibe "E-Mails" anstatt "Email".
+- Use a dot as the decimal separator (e.g. "12.2%" instead of "12,2%").
