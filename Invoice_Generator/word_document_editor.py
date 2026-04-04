@@ -339,16 +339,24 @@ class WordDocumentEditor:
             print(f"Error adding rows to table: {e}")
             return False
     
-    def add_working_item_to_first_free_row(self, date: str, topic: str, efforts: str, hours: float) -> bool:
+    def add_working_item_to_first_free_row(
+        self,
+        date: str,
+        topic: str,
+        efforts: str,
+        hours: float,
+        hours_display: Optional[str] = None,
+    ) -> bool:
         """
         Add a working item to the first free row from the top in the first table.
-        
+
         Args:
             date (str): Date of the work item
             topic (str): Topic of the work item
             efforts (str): Description of efforts/work done
-            hours (float): Number of hours worked
-            
+            hours (float): Number of hours worked (used for totals; may be 0 for waived lines)
+            hours_display (str, optional): If set, shown in the hours column instead of formatted hours
+
         Returns:
             bool: True if item was added successfully, False otherwise
         """
@@ -389,7 +397,7 @@ class WordDocumentEditor:
             row.cells[0].text = str(date)
             row.cells[1].text = str(topic)
             row.cells[2].text = str(efforts)
-            row.cells[3].text = str(hours)
+            row.cells[3].text = hours_display if hours_display is not None else f"{hours:.2f}"
             
             print(f"Added working item to row {free_row_index + 1}: {date} - {topic}")
             return True

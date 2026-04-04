@@ -160,7 +160,8 @@ def process_google_sheets_data(editor, config):
                 date=item['date'].strftime('%Y-%m-%d'),
                 topic=item['topic'],
                 efforts=item['working_item'],
-                hours=item['hours']
+                hours=item['hours'],
+                hours_display=item.get('hours_display'),
             )
             if not success:
                 print(f"Error: Failed to add item {i+1}: {item['topic']}")

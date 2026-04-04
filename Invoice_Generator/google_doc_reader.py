@@ -7,7 +7,7 @@ Reads work items from Google Sheets based on specified month and sheet name.
 import os
 import re
 from datetime import datetime, date
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -165,25 +165,35 @@ class GoogleDocReader:
         
         return None
     
-    def _parse_hours(self, hours_str: str) -> float:
+    def _parse_hours_field(self, hours_str) -> Tuple[float, Optional[str]]:
         """
-        Parse hours string into float.
-        
-        Args:
-            hours_str (str): Hours string
-            
+        Parse the hours cell: a plain number bills that amount; text containing
+        'waived' (case-insensitive) bills 0 but keeps the original text for the
+        invoice; anything else raises ValueError.
+
         Returns:
-            float: Parsed hours or 0.0 if parsing fails
+            (hours_for_total, display_override): display_override is set only
+            for waived rows (use this string in the invoice hours column).
         """
-        if not hours_str or hours_str.strip() == '':
-            return 0.0
-            
+        if hours_str is None or (isinstance(hours_str, str) and hours_str.strip() == ''):
+            return (0.0, None)
+
+        if isinstance(hours_str, (int, float)):
+            return (float(hours_str), None)
+
+        raw = str(hours_str).strip()
+
         try:
-            # Remove any non-numeric characters except decimal point
-            cleaned = re.sub(r'[^\d.]', '', str(hours_str))
-            return float(cleaned) if cleaned else 0.0
+            return (float(raw), None)
         except (ValueError, TypeError):
-            return 0.0
+            pass
+
+        if 'waived' in raw.lower():
+            return (0.0, raw)
+
+        raise ValueError(
+            f"Invalid hours value {raw!r}: expected a number, or text containing 'waived'"
+        )
     
     def _is_in_target_period(self, item_date: date) -> bool:
         """
@@ -236,7 +246,8 @@ class GoogleDocReader:
         Retrieve all work items from the specified sheet for the target period.
         
         Returns:
-            List[Dict]: List of work items with keys: date, topic, working_item, hours
+            List[Dict]: Work items with keys: date, topic, working_item, hours (float;
+            billed total), and optionally hours_display (original cell text for waived rows).
         """
         if not self._sheet:
             print("Error: Not connected to sheet. Call connect() first.")
@@ -272,15 +283,17 @@ class GoogleDocReader:
                 topic = row[1] if len(row) > 1 else ''
                 working_item = row[2] if len(row) > 2 else ''
                 hours_str = row[3] if len(row) > 3 else ''
-                hours = self._parse_hours(hours_str)
-                
+                hours, hours_display = self._parse_hours_field(hours_str)
+
                 work_item = {
                     'date': item_date,
                     'topic': topic.strip(),
                     'working_item': working_item.strip(),
-                    'hours': hours
+                    'hours': hours,
                 }
-                
+                if hours_display is not None:
+                    work_item['hours_display'] = hours_display
+
                 self.work_items.append(work_item)
             
             # Format period display for logging
@@ -291,7 +304,9 @@ class GoogleDocReader:
             
             print(f"Found {len(self.work_items)} work items for {period_display}")
             return self.work_items
-            
+
+        except ValueError:
+            raise
         except Exception as e:
             print(f"Error retrieving work items: {e}")
             return []
@@ -315,7 +330,8 @@ class GoogleDocReader:
         
         for item in self.work_items:
             date_str = item['date'].strftime('%Y-%m-%d')
-            print(f"{date_str:<12} {item['topic']:<20} {item['working_item']:<30} {item['hours']:<8.2f}")
+            hours_col = item.get('hours_display', f"{item['hours']:.2f}")
+            print(f"{date_str:<12} {item['topic']:<20} {item['working_item']:<30} {hours_col:<8}")
         
         print("-" * 80)
     

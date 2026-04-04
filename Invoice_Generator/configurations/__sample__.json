@@ -5,7 +5,7 @@
     "copy_invoice_PDF_to_folder": "/Users/vasilenkoilya/Dropbox/05. Work/4 My BIZ and brand/1 GmbH/2 Earnings/1 AlpineAI",
     "VAT": true,
     // if the following two parameters are not set, the invoice will be generated for the last month
-    "period_from": "2025-07-01",
-    "period_to": "2025-09-30",
+    "period_from": "2026-01-01",
+    "period_to": "2026-03-31",
     "alternative_inovoice_date": "2025-12-31"
 }
