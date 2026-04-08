@@ -9,3 +9,16 @@ https://office-watch.com/2026/microsoft-delays-forced-new-outlook/
 https://www.windowscentral.com/microsoft/microsoft-delays-the-new-outlook-takeover-again-admins-get-one-more-year-to-panic-in-peace
 https://www.ad-hoc-news.de/boerse/news/ueberblick/microsofts-outlook-ai-verstoesst-womoeglich-gegen-die-dsgvo/68454832
 https://www.itmagazine.ch/artikel/81362/Microsofts_neues_Outlook_gibt_Daten_an_knapp_800_Werbepartner_weiter.html
+https://learn.microsoft.com/en-us/microsoft-365-apps/outlook/get-started/control-install
+https://support.microsoft.com/en-us/office/feature-comparison-between-new-outlook-and-classic-outlook-de453583-1e76-48bf-975a-2e9cd2ee16dd
+https://www.edps.europa.eu/press-publications/press-news/press-releases/2024/european-commissions-use-microsoft-365-infringes-data-protection-law-eu-institutions-and-bodies
+https://www.edps.europa.eu/press-publications/press-news/press-releases/2025/european-commission-brings-use-microsoft-365-compliance-data-protection-rules-eu-institutions-and-bodies
+https://www.bfdi.bund.de/SharedDocs/Downloads/DE/DokumenteBfDI/Rundschreiben/Allgemein/2022/Rundschreiben-MS365.html
+https://www.datenschutzkonferenz-online.de/beschluesse-dsk.html
+https://www.edoeb.admin.ch/en/07032023-federal-administration-introduces-public-cloud-based-application-microsoft-365
+https://www.bsi.bund.de/DE/Service-Navi/Presse/Pressemitteilungen/Presse2019/Empfehlungen_Microsoft_190619.html
+https://www.bsi.bund.de/DE/Service-Navi/Publikationen/Studien/Office_Telemetrie/telemetrie.html
+https://datenschutz.hessen.de/presse/hbdi-microsoft-365-kann-datenschutzkonform-genutzt-werden
+https://www.baden-wuerttemberg.datenschutz.de/ms-365-schulen-hinweise-weiteres-vorgehen/
+https://learn.microsoft.com/en-us/microsoft-365/copilot/enterprise-data-protection
+https://learn.microsoft.com/en-us/copilot/manage
