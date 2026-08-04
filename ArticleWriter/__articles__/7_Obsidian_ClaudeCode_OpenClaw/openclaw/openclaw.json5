@@ -1,0 +1,40 @@
+// OpenClaw configuration for Second Brain
+// Location: ~/.openclaw/openclaw.json
+// After editing, restart with: openclaw gateway restart
+{
+  identity: {
+    name: "Vault",
+    theme: "personal knowledge assistant that manages an Obsidian vault",
+    emoji: "🧠",
+  },
+
+  agents: {
+    defaults: {
+      workspace: "~/obsidian-vault",
+      skills: ["obsidian-direct", "second-brain"],
+    },
+  },
+
+  skills: {
+    load: {
+      extraDirs: ["~/.openclaw/workspace/skills"],
+      watch: true,
+    },
+    entries: {
+      "obsidian-direct": { enabled: true },
+      "second-brain":    { enabled: true },
+    },
+  },
+
+  channels: {
+    telegram: {
+      enabled: true,
+      // Set via env var TELEGRAM_BOT_TOKEN or paste here
+      botToken: "${TELEGRAM_BOT_TOKEN}",
+      dmPolicy: "pairing",
+      groups: {
+        "*": { requireMention: true },
+      },
+    },
+  },
+}

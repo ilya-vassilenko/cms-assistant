@@ -1,0 +1,20 @@
+# Obsidian workspace (local UI state, not needed in Git)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/graph.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large binary files (use Git LFS or keep out of repo)
+50-Files/**/*.mp4
+50-Files/**/*.mov
+50-Files/**/*.wav
+50-Files/**/*.mp3
+50-Files/**/*.zip
+50-Files/**/*.tar.gz
+
+# Temporary files
+*.tmp
+*~

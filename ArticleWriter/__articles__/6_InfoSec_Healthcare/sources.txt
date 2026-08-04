@@ -1,0 +1,49 @@
+# Quellen — InfoSec Healthcare Conference 2026
+# Vortrag: "Wie setze ich KI für Gesundheitsdaten konform ein?"
+# Stand: 2026-04-22
+
+## Schweizer Recht & Regulierung (DSG, KI-Auslegeordnung, Berufsgeheimnis)
+https://www.edoeb.admin.ch/de/ki-und-datenschutz
+https://www.edoeb.admin.ch/de/update-geltendes-datenschutzgesetz-ist-auf-ki-direkt-anwendbar
+https://www.edoeb.admin.ch/de/datenschutztag-2026
+https://www.bakom.admin.ch/de/kuenstliche-intelligenz
+https://www.bj.admin.ch/bj/de/home/staat/gesetzgebung/kuenstliche-intelligenz.html
+https://www.news.admin.ch/de/nsb?id=104110
+https://www.news.admin.ch/de/nsb?id=104646
+https://www.zh.ch/de/wirtschaft-arbeit/wirtschaftsstandort/innovation-sandbox/medizinische-dokumentation/2-datenschutz-berufsgeheimnis-und-die-cloud.html
+https://www.bfh.ch/dam/jcr:deb88ea7-662d-499a-8a1c-fb83d070f113/Das%20Potenzial%20von%20Open%20Source%20KI%20im%20Kontext%20von%20Datenschutz%20und%20Berufsgeheimnis.pdf
+https://www.edoeb.admin.ch/de/outsourcing-auftragsdatenbearbeitung
+https://www.bj.admin.ch/bj/de/home/staat/datenschutz/internationales/anerkennung-staaten.html
+https://www.edoeb.admin.ch/de/angemessenheit
+https://www.activemind.ch/blog/personendaten/
+
+## EU AI Act & Medizinprodukte (MDR/IVDR)
+https://artificialintelligenceact.eu/implementation-timeline/
+https://health.ec.europa.eu/document/download/b78a17d7-e3cd-4943-851d-e02a2f22bbb4_en?filename=mdcg_2025-6_en.pdf
+https://quickbirdmedical.com/en/ai-act-medical-devices-mdr/
+https://educolifesciences.com/the-eu-ai-act-and-medical-devices-what-medtech-companies-must-do-before-august-2026/
+https://www.swissmedic.ch/swissmedic/de/home/humanarzneimittel/authorisations/artificiel-intelligence.html
+https://www.bag.admin.ch/de/medizinprodukterecht
+
+## AI Governance Frameworks & Standards
+https://www.nist.gov/itl/ai-risk-management-framework
+https://www.iso.org/standard/42001
+https://kpmg.com/ch/en/insights/artificial-intelligence/iso-iec-42001.html
+https://healthtechmagazine.net/article/2026/03/what-healthcare-organizations-can-learn-nists-ai-risk-management-framework
+
+## Einwilligung, Informationspflicht, Vertrag, Profiling & DSFA (DSG-Spezifika)
+https://datenschutztreuhand.ch/grundsaetzliches-zur-einwilligung-nach-dsg/
+https://onlinekommentar.ch/de/kommentare/art6abs6und7
+https://www.bratschi.ch/publikationen/rechtliche-anforderungen-an-die-nutzung-von-ki-applikationen-im-gesundheitswesen
+https://datenschutz-grundverordnung.eu/dsg-schweiz/art-31-rechtfertigungsgrunde/
+https://datenschutz.law/revdsg/3-kapitel/art-21
+https://onlinekommentar.ch/de/kommentare/dsg22
+https://www.infosec.ch/blog/kommentar-zu-art-22-dsg-datenschutz-folgenabschaetzung/
+https://www.hin.ch/de/blog/2023/ndsg-gesundheitswesen-teil-1.cfm
+https://www.fedlex.admin.ch/eli/cc/2022/491/de
+
+## Shadow AI & Praxis im Gesundheitswesen
+https://www.wolterskluwer.com/en/solutions/uptodate/ai-clinical-decision-support/shadow-ai-report
+https://dhinsights.org/blog/shadow-ai-emerges-as-one-of-healthcares-biggest-security-risks/
+https://healthtechmagazine.net/article/2026/03/how-address-shadow-ai-healthcare
+https://www.medconweb.de/blog/it-edv/schweiz-zieht-enge-grenzen-fuer-ki-im-gesundheitswesen/
